@@ -8,10 +8,13 @@ import StreamCanvas from './StreamCanvas.astro';
 
 <header class="hero-section">
   <div class="gradient-background" data-id="gradient">
-    <!-- 粒子流动特效背景层 -->
-    <StreamCanvas />
-    
     <div class="hero-content" data-id="content">
+      <!-- 粒子流动特效区域 -->
+      <div class="canvas-wrapper">
+        <StreamCanvas />
+      </div>
+      
+      <!-- 标题文案区域 -->
       <div class="hero-text">
         <h1 class="hero-title">Flexible Payments Security</h1>
         <h2 class="hero-subtitle">Maximum protection, minimum compliance burden</h2>
@@ -64,8 +67,18 @@ import StreamCanvas from './StreamCanvas.astro';
     max-width: 1200px;
     width: 100%;
     padding: 0 2rem;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -10vh; /* 整体往上移动 */
+  }
+
+  .canvas-wrapper {
+    width: calc(100vw - 5rem); /* 铺满卡片宽度 */
+    max-width: none;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
   }
 
   .hero-text {
