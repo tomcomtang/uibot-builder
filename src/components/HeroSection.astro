@@ -163,18 +163,17 @@ import StreamCanvas from './StreamCanvas.astro';
       
       <!-- 标题文案区域 -->
       <div class="hero-text">
-        <h1 class="hero-title">Flexible Payments Security</h1>
-        <h2 class="hero-subtitle">Maximum protection, minimum compliance burden</h2>
+        <h1 class="hero-title">AI-Powered Interactive Experience</h1>
+        <h2 class="hero-subtitle">Transform AI capabilities into intuitive, engaging user interfaces</h2>
         <p class="hero-description">
-          Take control of your payments stack — easily tokenize cards, optimize margins, 
-          comply with PCI, avoid gateway lock-in, or spin-up card issuing programs.
+          Bridge the gap between artificial intelligence and human interaction. 
+          Our platform translates complex AI responses into beautiful, interactive components 
+          that users can understand and engage with naturally. Create rich, conversational 
+          experiences with intelligent visualizations, dynamic forms, and responsive feedback 
+          that make AI feel less like a black box and more like a collaborative partner.
         </p>
-        <a class="cta-button" href="/contact">
-          Talk to an Expert
-          <svg width="10" height="10" viewBox="0 0 10 10" class="arrow-icon" aria-hidden="true">
-            <path d="M0 5h7" class="line"></path>
-            <path d="M1 1l4 4-4 4" class="chevron"></path>
-          </svg>
+        <a class="cta-button Button-module__8cr-Ka__container" href="/contact" data-size="large" data-type="primary" data-pulse="false">
+          Get Started
         </a>
       </div>
     </div>
@@ -196,9 +195,10 @@ import StreamCanvas from './StreamCanvas.astro';
   .gradient-background {
     position: relative;
     width: calc(100% - 1.5rem);
-    height: 80vh;
-    display: grid;
-    place-items: center;
+    height: 90vh; /* 进一步增加高度 */
+    display: flex; /* 改为 flex */
+    align-items: center; /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
     padding: 0 2rem;
     margin: 0 0.75rem;
     
@@ -217,16 +217,19 @@ import StreamCanvas from './StreamCanvas.astro';
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: -10vh; /* 整体往上移动 */
   }
 
   .canvas-wrapper {
-    position: relative;
-    width: calc(100vw - 5rem); /* 铺满卡片宽度 */
-    max-width: none;
+    position: absolute; /* 改为绝对定位 */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
-    margin-bottom: 0.5rem;
+    pointer-events: none; /* 不影响文案点击 */
   }
 
   .particle-mask {
@@ -247,6 +250,7 @@ import StreamCanvas from './StreamCanvas.astro';
   /* 基准线右侧裁剪（左侧显示） */
   .particle-mask[data-position="right"] {
     clip-path: inset(0 calc(50% - 5px) 0 0);
+    display: none; /* 隐藏轮播图 */
   }
 
   .particle-scroller {
@@ -399,6 +403,7 @@ import StreamCanvas from './StreamCanvas.astro';
     align-items: center;
     gap: 1.5rem;
     pointer-events: all;
+    transform: translateY(-10%); /* 文案区域向上移动 10% */
   }
 
   .hero-title {
@@ -429,51 +434,12 @@ import StreamCanvas from './StreamCanvas.astro';
   }
 
   .cta-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #ffffff;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    border: none;
-    border-radius: 12px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    margin-top: 0.5rem;
   }
 
-  .cta-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(99, 102, 241, 0.5);
-  }
-
-  .arrow-icon {
-    width: 10px;
-    height: 10px;
-    transition: transform 0.3s ease;
-  }
-
-  .cta-button:hover .arrow-icon {
-    transform: translateX(3px);
-  }
-
-  .arrow-icon .line,
-  .arrow-icon .chevron {
-    stroke: currentColor;
-    stroke-width: 2;
-    fill: none;
-  }
-
-  .arrow-icon .line {
-    transition: transform 0.3s ease;
-  }
-
-  .arrow-icon .chevron {
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  /* 确保按钮 hover 动画不被覆盖 */
+  .hero-text .cta-button {
+    pointer-events: all;
   }
 
   @media (max-width: 768px) {
