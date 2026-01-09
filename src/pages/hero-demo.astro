@@ -1,0 +1,58 @@
+---
+/**
+ * Hero Demo 页面 - 首屏演示
+ * 只包含 Hero Section，不含 FileStream 动画
+ */
+
+import EvervaultHead from '../components/EvervaultHead.astro';
+import OriginalHeader from '../components/OriginalHeader.astro';
+import HeroSection from '../components/HeroSection.astro';
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgeOne — Flexible Payments Security</title>
+  
+  <!-- EdgeOne 原始资源（只加载 CSS） -->
+  <EvervaultHead />
+  
+  <style is:global>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* 隐藏 Next.js 动态渲染的内容 */
+    #__next {
+      display: none !important;
+    }
+
+    /* 隐藏不需要的元素 */
+    [class*="styles-module__uOGawG__wrapper"],
+    [class*="styles-module__Rkd4lW__banner"],
+    [class*="styles-module__1H6L9a__navigation"],
+    footer[class*="Footer-module"] {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 原始导航栏 -->
+  <OriginalHeader />
+
+  <!-- Hero Section -->
+  <HeroSection />
+</body>
+</html>

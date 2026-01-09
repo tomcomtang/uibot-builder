@@ -1,0 +1,201 @@
+---
+/**
+ * StreamCanvas 组件 - Three.js 粒子流动特效
+ * 纯背景装饰，不影响内容层
+ */
+---
+
+<div class="stream-canvas-wrapper">
+  <canvas id="stream-canvas"></canvas>
+</div>
+
+<style>
+  .stream-canvas-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  // 导入 Three.js
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js';
+
+  class StreamAnimation {
+    constructor(canvas: HTMLCanvasElement) {
+      this.canvas = canvas;
+      this.init();
+      this.createParticles();
+      this.animate();
+      
+      window.addEventListener('resize', () => this.onResize());
+    }
+
+    private canvas: HTMLCanvasElement;
+    private scene!: THREE.Scene;
+    private camera!: THREE.PerspectiveCamera;
+    private renderer!: THREE.WebGLRenderer;
+    private particles!: THREE.Points;
+    private particleCount = 2000;
+
+    init() {
+      this.scene = new THREE.Scene();
+
+      const aspect = window.innerWidth / window.innerHeight;
+      this.camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+      this.camera.position.z = 400;
+
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: true
+      });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    }
+
+    createParticles() {
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(this.particleCount * 3);
+      const velocities = new Float32Array(this.particleCount * 3);
+      const colors = new Float32Array(this.particleCount * 3);
+      const sizes = new Float32Array(this.particleCount);
+
+      const color1 = new THREE.Color(0x6432e6);
+      const color2 = new THREE.Color(0x8a2be2);
+      const color3 = new THREE.Color(0x9370db);
+
+      for (let i = 0; i < this.particleCount; i++) {
+        const i3 = i * 3;
+
+        // 从左侧开始
+        positions[i3] = -500 + Math.random() * 300;
+        positions[i3 + 1] = (Math.random() - 0.5) * 1000;
+        positions[i3 + 2] = (Math.random() - 0.5) * 1000;
+
+        // 主要向右移动（速度变慢）
+        velocities[i3] = Math.random() * 0.3 + 0.2; // x: 向右（0.2-0.5）
+        velocities[i3 + 1] = (Math.random() - 0.5) * 0.15; // y: 轻微上下
+        velocities[i3 + 2] = (Math.random() - 0.5) * 0.15; // z: 轻微前后
+
+        const colorChoice = Math.floor(Math.random() * 3);
+        const selectedColor = colorChoice === 0 ? color1 : colorChoice === 1 ? color2 : color3;
+        colors[i3] = selectedColor.r;
+        colors[i3 + 1] = selectedColor.g;
+        colors[i3 + 2] = selectedColor.b;
+
+        // 随机大小：1 到 2.5 之间
+        sizes[i] = Math.random() * 1.5 + 1;
+      }
+
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+      // 创建星星贴图
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d')!;
+      
+      // 绘制星星
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      const centerX = 32, centerY = 32, outerRadius = 28, innerRadius = 12;
+      for (let i = 0; i < 5; i++) {
+        const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const x = centerX + Math.cos(angle) * outerRadius;
+        const y = centerY + Math.sin(angle) * outerRadius;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+        
+        const innerAngle = angle + (2 * Math.PI) / 5;
+        const ix = centerX + Math.cos(innerAngle) * innerRadius;
+        const iy = centerY + Math.sin(innerAngle) * innerRadius;
+        ctx.lineTo(ix, iy);
+      }
+      ctx.closePath();
+      ctx.fill();
+      
+      // 添加光晕
+      const gradient = ctx.createRadialGradient(32, 32, 10, 32, 32, 32);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 64, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+
+      const material = new THREE.PointsMaterial({
+        size: 2.5,
+        map: texture,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        sizeAttenuation: true
+      });
+
+      this.particles = new THREE.Points(geometry, material);
+      this.scene.add(this.particles);
+    }
+
+    animate = () => {
+      requestAnimationFrame(this.animate);
+
+      const positions = this.particles.geometry.attributes.position.array as Float32Array;
+      const velocities = this.particles.geometry.attributes.velocity.array as Float32Array;
+
+      for (let i = 0; i < this.particleCount; i++) {
+        const i3 = i * 3;
+
+        positions[i3] += velocities[i3];
+        positions[i3 + 1] += velocities[i3 + 1];
+        positions[i3 + 2] += velocities[i3 + 2];
+
+        // 从左到右循环
+        if (positions[i3] > 500) {
+          positions[i3] = -500;
+          positions[i3 + 1] = (Math.random() - 0.5) * 1000;
+          positions[i3 + 2] = (Math.random() - 0.5) * 1000;
+        }
+        
+        // Y 和 Z 方向保持范围
+        if (positions[i3 + 1] > 500) positions[i3 + 1] = -500;
+        if (positions[i3 + 1] < -500) positions[i3 + 1] = 500;
+        if (positions[i3 + 2] > 500) positions[i3 + 2] = -500;
+        if (positions[i3 + 2] < -500) positions[i3 + 2] = 500;
+      }
+
+      this.particles.geometry.attributes.position.needsUpdate = true;
+
+      // 不旋转，保持从左到右的水平流动
+      this.renderer.render(this.scene, this.camera);
+    };
+
+    onResize() {
+      const aspect = window.innerWidth / window.innerHeight;
+      this.camera.aspect = aspect;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+  }
+
+  const canvas = document.getElementById('stream-canvas') as HTMLCanvasElement;
+  if (canvas) {
+    new StreamAnimation(canvas);
+  }
+</script>
