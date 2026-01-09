@@ -1,0 +1,71 @@
+---
+/**
+ * A2UI 电商助手 - 使用 Evervault 首屏 + A2UI 聊天叠加
+ * 
+ * 架构说明：
+ * 1. 从 public/index.html 加载 Evervault 的 Next.js 打包文件
+ * 2. 提取并处理 head 和 body 内容
+ * 3. 删除不需要的元素，保留 Header
+ * 4. 叠加 A2UI 聊天组件
+ */
+
+import {
+  loadEvervaultHTML,
+  extractHeadContent,
+  extractBodyContent,
+  removeContentDiv,
+  removeElements,
+  keepOnlyHeaderInMain,
+  replaceText,
+} from '../utils/evervault-loader';
+import A2UIChat from '../components/A2UIChat.astro';
+
+// 导入 A2UI 聊天样式
+import '../styles/a2ui-chat.css';
+
+// 加载 Evervault HTML
+const evervaultHtml = loadEvervaultHTML();
+
+// 提取 head 和 body 内容
+const headContent = extractHeadContent(evervaultHtml);
+let bodyContent = extractBodyContent(evervaultHtml);
+
+// 处理 body 内容
+bodyContent = removeContentDiv(bodyContent, '__content');
+console.log('✓ 已删除 <div id="__content"> 包裹层');
+
+// 移除不需要的元素
+const removePatterns = [
+  /<div[^>]*class="[^"]*styles-module__uOGawG__wrapper[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+  /<div[^>]*class="[^"]*styles-module__Rkd4lW__banner[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+];
+bodyContent = removeElements(bodyContent, removePatterns);
+
+// 保留 main 标签下只有 header
+bodyContent = keepOnlyHeaderInMain(bodyContent);
+
+// 修改品牌名称：Evervault → EdgeOne
+bodyContent = replaceText(bodyContent, /Evervault/g, 'EdgeOne');
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A2UI 电商助手</title>
+  
+  <!-- Evervault 原始 head 内容 -->
+  <Fragment set:html={headContent} />
+</head>
+<body>
+  <!-- Evervault 原始页面内容 -->
+  <Fragment set:html={bodyContent} />
+
+  <!-- A2UI 聊天组件 -->
+  <A2UIChat />
+
+  <!-- A2UI 聊天逻辑 -->
+  <script src="../scripts/a2ui-chat.js"></script>
+</body>
+</html>
