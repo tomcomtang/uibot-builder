@@ -1,0 +1,436 @@
+---
+/**
+ * JsonToUICanvas 组件 - JSON 转 UI 组件动画
+ * 展示 A2UI 核心概念：将 JSON 数据转换为交互式 UI 组件
+ */
+---
+
+<div class="json-to-ui-canvas-wrapper">
+  <canvas id="json-to-ui-canvas"></canvas>
+</div>
+
+<style>
+  .json-to-ui-canvas-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js';
+
+  // JSON 符号集
+  const JSON_CHARS = ['{', '}', '[', ']', '"', ':', ',', 'data', 'type', 'value', 'props'];
+  
+  // UI 组件类型
+  enum UIComponentType {
+    INPUT = 'input',
+    BUTTON = 'button',
+    CARD = 'card',
+    CHECKBOX = 'checkbox',
+    SLIDER = 'slider'
+  }
+
+  // 随机颜色池（丰富多彩的颜色）
+  const COLORS = [
+    '#6432e6', // 紫色
+    '#e62e8b', // 玫红
+    '#2e86e6', // 蓝色
+    '#e6962e', // 橙色
+    '#2ee6a6', // 青色
+    '#e6e62e', // 黄色
+    '#8b2ee6', // 深紫
+    '#2ee65a', // 绿色
+    '#e62e5a', // 红色
+    '#5a2ee6', // 蓝紫
+  ];
+
+  interface Particle {
+    mesh: THREE.Mesh;
+    velocity: THREE.Vector3;
+    startX: number;
+    phase: 'json' | 'transition' | 'ui';
+    targetType?: UIComponentType;
+    rotationSpeed: number;
+    color: string; // 粒子颜色
+    currentText?: string; // 当前显示的文本（用于判断宽度）
+  }
+
+  class JsonToUIAnimation {
+    private canvas: HTMLCanvasElement;
+    private scene!: THREE.Scene;
+    private camera!: THREE.PerspectiveCamera;
+    private renderer!: THREE.WebGLRenderer;
+    private particles: Particle[] = [];
+    private particleCount = 50; // 增加数量，让画面更丰富
+
+    constructor(canvas: HTMLCanvasElement) {
+      this.canvas = canvas;
+      this.init();
+      this.createParticles();
+      this.animate();
+      
+      window.addEventListener('resize', () => this.onResize());
+    }
+
+    init() {
+      this.scene = new THREE.Scene();
+
+      const wrapper = this.canvas.parentElement!;
+      const aspect = wrapper.clientWidth / wrapper.clientHeight;
+      this.camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+      this.camera.position.z = 400;
+
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: true
+      });
+      this.renderer.setSize(wrapper.clientWidth, wrapper.clientHeight);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    }
+
+    // 创建 JSON 文本纹理（霓虹发光效果）
+    createTextTexture(text: string, color: string = '#6432e6'): THREE.CanvasTexture {
+      const canvas = document.createElement('canvas');
+      // 根据文本长度动态调整画布宽度
+      const width = text.length > 2 ? 512 : 256;
+      canvas.width = width;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d')!;
+      
+      ctx.font = '120px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // 使用 composite 模式创造发光效果
+      ctx.globalCompositeOperation = 'lighter'; // 关键：叠加发光
+      
+      // 外层发光（大范围模糊）
+      ctx.fillStyle = color;
+      ctx.filter = 'blur(20px)';
+      ctx.globalAlpha = 0.3;
+      ctx.fillText(text, width / 2, 128);
+      ctx.fillText(text, width / 2, 128);
+      ctx.fillText(text, width / 2, 128);
+      
+      // 中层发光
+      ctx.filter = 'blur(10px)';
+      ctx.globalAlpha = 0.5;
+      ctx.fillText(text, width / 2, 128);
+      ctx.fillText(text, width / 2, 128);
+      
+      // 内层发光
+      ctx.filter = 'blur(5px)';
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(text, width / 2, 128);
+      
+      // 核心文字（清晰无模糊）
+      ctx.filter = 'none';
+      ctx.globalAlpha = 1.0;
+      ctx.fillText(text, width / 2, 128);
+
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    // 创建 UI 组件图标纹理（霓虹发光效果）
+    createUIIconTexture(type: UIComponentType, color: string = '#8a2be2'): THREE.CanvasTexture {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d')!;
+      
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 6;
+      
+      // 使用 composite 模式创造发光效果
+      ctx.globalCompositeOperation = 'lighter';
+      
+      // 定义绘制函数
+      const drawIcon = () => {
+        switch (type) {
+          case UIComponentType.INPUT:
+            ctx.strokeRect(40, 100, 176, 56);
+            ctx.fillRect(50, 116, 40, 24);
+            break;
+          
+          case UIComponentType.BUTTON:
+            ctx.beginPath();
+            ctx.roundRect(50, 90, 156, 76, 16);
+            ctx.fill();
+            ctx.stroke();
+            break;
+          
+          case UIComponentType.CARD:
+            ctx.strokeRect(40, 60, 176, 136);
+            ctx.fillRect(50, 70, 156, 16);
+            ctx.fillRect(50, 100, 80, 12);
+            ctx.fillRect(50, 124, 100, 12);
+            break;
+          
+          case UIComponentType.CHECKBOX:
+            ctx.strokeRect(80, 80, 96, 96);
+            ctx.beginPath();
+            ctx.moveTo(100, 128);
+            ctx.lineTo(120, 148);
+            ctx.lineTo(156, 104);
+            ctx.stroke();
+            break;
+          
+          case UIComponentType.SLIDER:
+            ctx.beginPath();
+            ctx.moveTo(40, 128);
+            ctx.lineTo(216, 128);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(140, 128, 24, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            break;
+        }
+      };
+      
+      // 外层发光（多次绘制增强效果）
+      ctx.filter = 'blur(15px)';
+      ctx.globalAlpha = 0.3;
+      drawIcon();
+      drawIcon();
+      drawIcon();
+      
+      // 中层发光
+      ctx.filter = 'blur(8px)';
+      ctx.globalAlpha = 0.5;
+      drawIcon();
+      drawIcon();
+      
+      // 内层发光
+      ctx.filter = 'blur(4px)';
+      ctx.globalAlpha = 0.7;
+      drawIcon();
+      
+      // 核心图标（清晰）
+      ctx.filter = 'none';
+      ctx.globalAlpha = 1.0;
+      drawIcon();
+
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    createParticles() {
+      const uiTypes = Object.values(UIComponentType);
+      const wrapper = this.canvas.parentElement!;
+      const canvasWidth = wrapper.clientWidth;
+      const margin = 150; // 边缘间隙
+
+      for (let i = 0; i < this.particleCount; i++) {
+        // 起始位置在左边缘外（带间隙）
+        const startX = -canvasWidth / 2 - margin + Math.random() * 200;
+        const y = (Math.random() - 0.5) * 400; // 增加垂直范围
+        const z = (Math.random() - 0.5) * 200;
+
+        // 随机颜色
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+        // 50% 概率转换为 UI 图标
+        const willTransform = Math.random() > 0.5;
+        let texture: THREE.CanvasTexture;
+        let targetType: UIComponentType | undefined;
+
+        // 初始都是 JSON 符号
+        const char = JSON_CHARS[Math.floor(Math.random() * JSON_CHARS.length)];
+        texture = this.createTextTexture(char, color);
+        
+        // 根据文本长度调整 sprite 宽度（缩小1/4：16→12, 32→24）
+        const spriteWidth = char.length > 2 ? 24 : 12;
+        const spriteHeight = 12;
+        
+        // 只有 willTransform 的粒子才会在右侧变成 UI 图标
+        if (willTransform) {
+          targetType = uiTypes[Math.floor(Math.random() * uiTypes.length)];
+        }
+
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0, // 初始透明
+          blending: THREE.AdditiveBlending
+        });
+
+        const sprite = new THREE.Sprite(material);
+        sprite.position.set(startX, y, z);
+        sprite.scale.set(spriteWidth, spriteHeight, 1); // 根据文本长度调整
+        
+        this.scene.add(sprite);
+
+        this.particles.push({
+          mesh: sprite,
+          velocity: new THREE.Vector3(
+            Math.random() * 0.4 + 0.25, // x: 向右（速度减半）
+            (Math.random() - 0.5) * 0.15, // y: 轻微上下（速度减半）
+            (Math.random() - 0.5) * 0.1  // z: 轻微前后（速度减半）
+          ),
+          startX,
+          phase: 'json',
+          targetType, // 如果是 undefined，则永远保持 JSON
+          rotationSpeed: (Math.random() - 0.5) * 0.01, // 旋转速度减半
+          color,
+          currentText: char // 记录当前文本
+        });
+      }
+    }
+
+    updateParticle(particle: Particle) {
+      const pos = particle.mesh.position;
+      const wrapper = this.canvas.parentElement!;
+      const canvasWidth = wrapper.clientWidth;
+      const margin = 150; // 边缘间隙
+      const edgeFadeDistance = 100; // 边缘淡入淡出距离
+      const centerFadeDistance = 120; // 中线淡入淡出距离
+      
+      // 更新位置
+      pos.x += particle.velocity.x;
+      pos.y += particle.velocity.y;
+      pos.z += particle.velocity.z;
+
+      // 旋转效果
+      particle.mesh.material.rotation += particle.rotationSpeed;
+
+      // 计算边界（考虑间隙）
+      const leftBoundary = -canvasWidth / 2 + margin;
+      const rightBoundary = canvasWidth / 2 - margin;
+      const centerLine = 0; // 屏幕中线
+      
+      // 根据 X 坐标判断阶段和透明度
+      if (pos.x < centerLine - centerFadeDistance) {
+        // 左侧区域：显示 JSON 符号
+        particle.phase = 'json';
+        // 根据当前文本长度设置宽度（缩小1/4：32→24, 16→12）
+        const spriteWidth = (particle.currentText && particle.currentText.length > 2) ? 24 : 12;
+        if (particle.mesh.scale.x !== spriteWidth || particle.mesh.scale.y !== 12) {
+          particle.mesh.scale.set(spriteWidth, 12, 1);
+        }
+        
+        // 边缘淡入效果
+        if (pos.x < leftBoundary + edgeFadeDistance) {
+          const fadeProgress = (pos.x - (leftBoundary - edgeFadeDistance)) / edgeFadeDistance;
+          particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeProgress * 0.85));
+        } else {
+          particle.mesh.material.opacity = 0.85;
+        }
+      } else if (pos.x < centerLine) {
+        // 靠近中线左侧：JSON 淡出消失
+        particle.phase = 'transition';
+        const fadeOutProgress = (centerLine - pos.x) / centerFadeDistance; // 1 → 0
+        particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeOutProgress * 0.85));
+      } else if (particle.targetType && pos.x < centerLine + centerFadeDistance) {
+        // 靠近中线右侧：只有 targetType 的粒子才会变成 UI 淡入出现
+        particle.phase = 'ui';
+        const fadeInProgress = (pos.x - centerLine) / centerFadeDistance; // 0 → 1
+        particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeInProgress * 0.85));
+        
+        // 切换到 UI 纹理和尺寸（缩小1/4：21→16）
+        particle.mesh.material.map = this.getUITexture(particle.targetType, particle.color);
+        particle.mesh.material.needsUpdate = true;
+        if (particle.mesh.scale.x !== 16) {
+          particle.mesh.scale.set(16, 16, 1); // UI 图标尺寸
+        }
+      } else if (particle.targetType) {
+        // 右侧区域：显示 UI 图标（只有 targetType 的粒子）
+        particle.phase = 'ui';
+        if (particle.mesh.scale.x !== 16) {
+          particle.mesh.scale.set(16, 16, 1); // UI 图标尺寸
+        }
+        
+        // 边缘淡出效果
+        if (pos.x > rightBoundary - edgeFadeDistance) {
+          const fadeProgress = (rightBoundary - pos.x) / edgeFadeDistance;
+          particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeProgress * 0.85));
+        } else {
+          particle.mesh.material.opacity = 0.85;
+        }
+      } else {
+        // 没有 targetType 的粒子在中线后继续保持透明（消失状态）
+        particle.mesh.material.opacity = 0;
+      }
+
+      // 循环：从右侧重置到左侧
+      if (pos.x > rightBoundary + edgeFadeDistance) {
+        pos.x = leftBoundary - edgeFadeDistance + Math.random() * 100;
+        pos.y = (Math.random() - 0.5) * 400; // 增加垂直范围
+        pos.z = (Math.random() - 0.5) * 200;
+        particle.phase = 'json';
+        
+        // 重新随机颜色
+        particle.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        
+        // 重新随机决定是否转换为 UI
+        if (Math.random() > 0.5) {
+          const uiTypes = Object.values(UIComponentType);
+          particle.targetType = uiTypes[Math.floor(Math.random() * uiTypes.length)];
+        } else {
+          particle.targetType = undefined; // 保持纯 JSON
+        }
+        
+        // 重置为 JSON 纹理
+        const char = JSON_CHARS[Math.floor(Math.random() * JSON_CHARS.length)];
+        particle.currentText = char; // 更新当前文本
+        particle.mesh.material.map = this.createTextTexture(char, particle.color);
+        particle.mesh.material.needsUpdate = true;
+        // 根据文本长度设置尺寸（缩小1/4：32→24, 16→12）
+        const spriteWidth = char.length > 2 ? 24 : 12;
+        particle.mesh.scale.set(spriteWidth, 12, 1);
+        particle.mesh.material.opacity = 0; // 重置为透明
+      }
+
+      // Y 和 Z 边界（增加范围）
+      if (pos.y > 200) pos.y = -200;
+      if (pos.y < -200) pos.y = 200;
+      if (pos.z > 100) pos.z = -100;
+      if (pos.z < -100) pos.z = 100;
+    }
+
+    // 缓存 UI 纹理（按类型和颜色）
+    private uiTextureCache: Map<string, THREE.CanvasTexture> = new Map();
+    
+    getUITexture(type: UIComponentType, color: string): THREE.CanvasTexture {
+      const key = `${type}-${color}`;
+      if (!this.uiTextureCache.has(key)) {
+        this.uiTextureCache.set(key, this.createUIIconTexture(type, color));
+      }
+      return this.uiTextureCache.get(key)!;
+    }
+
+    animate = () => {
+      requestAnimationFrame(this.animate);
+
+      this.particles.forEach(particle => this.updateParticle(particle));
+
+      this.renderer.render(this.scene, this.camera);
+    };
+
+    onResize() {
+      const wrapper = this.canvas.parentElement!;
+      const aspect = wrapper.clientWidth / wrapper.clientHeight;
+      this.camera.aspect = aspect;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(wrapper.clientWidth, wrapper.clientHeight);
+    }
+  }
+
+  const canvas = document.getElementById('json-to-ui-canvas') as HTMLCanvasElement;
+  if (canvas) {
+    new JsonToUIAnimation(canvas);
+  }
+</script>

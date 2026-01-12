@@ -1,174 +1,42 @@
-# HTML 拆解重构说明
+# 小红书推广
 
-## 📋 重构目标
+## 独立开发者关注点
 
-将 `public/index.html` 的内容拆解到模块化的 Astro 和 React 组件中，同时**保持页面渲染效果完全一致**。
+1、运营成本，独立开发者的 “穷鬼套餐” 方面的分享应该是一个方向点
+2、如何接单和与人协作找靠谱的人（推广个人形象） + 如何获取ideas灵感 ，这里是核心
+3、开发效率： 如何提高开发效率，工具分享是一个重要方向
+4、变现与收款
 
-## 🏗️ 新的架构
 
-### 1. **布局层** - `EvervaultLayout.astro`
-- 负责加载所有原始 Evervault 的 CSS 和 JS 资源
-- 提供统一的页面结构（`__next` wrapper + Layout module）
-- 支持自定义 head 和 scripts 插槽
+## 拟题列表
 
-### 2. **组件层**
+### 独立开发初期，那些我做了别人没做的事
 
-#### `EvervaultHero.astro` - Hero Section 组件
-- 包含品牌标题、副标题、CTA 按钮
-- 集成 FileStream 动画组件
-- 保留原始的 CSS 类名和结构
+1、建立个人品牌形象站点（可以关联EO的模版）——命中接单、个人推销
+2、未失业，先布局，提前开始关注和思考，了解市场和现状
+3、从工作场景挖掘衍生到大范围，既解决公司问题，又能进行个人尝试，不盲目跟风什么“导航站”、“平台支持”等，成本高，风险高，周期长。
+4、先写落地页，分享到社区看预反馈，有热度反馈才去做——命中效率
+5、先从Github上开始，分享自己的ideas项目，建立自信，同时可以揉和别人的ideas，给自己灵感
+6、不想着赚钱，以活下来为目标，降低预期
 
-#### `FileStream.tsx` - React 动画组件 ⭐
-**关键特性：**
-- ✅ 完整的 horizon 光线动画效果
-- ✅ 左右分屏遮罩（decrypted / encrypted）
-- ✅ 加密字符覆盖层动画
-- ✅ 响应式滚动激活
-- ✅ 平滑的淡入淡出过渡
+### 从 See 到 Act：如何打破 VLM（视觉语言模型）落地的最后一公里？
 
-**动画效果：**
-1. **Horizon Line** - 中央的发光扫描线
-2. **Horizon Glow** - 径向渐变光晕效果
-3. **Scan Animation** - 从左到右的扫描动画（`:after` 伪元素）
-4. **Encrypted Chars** - 加密字符的模糊覆盖层
+抛出价值点：
 
-#### `A2UIChat.astro` - AI 聊天组件
-- 保持不变，叠加在页面上
+做了个 AI 产品，但不知道怎么展示？
+找设计师做落地页太贵，自己写又不够精美？
+AI 能力很强，但用户体验很差，转化率低？
 
-### 3. **样式层**
+解释模版亮点：
 
-#### `filestream.css` - FileStream 专用样式
-提取自原始 `2c783d819a16cae5.css`，包含：
-- `.filestream` - 容器样式和响应式缩放
-- `.horizon` - 光线动画和渐变
-- `.mask` - 左右分屏遮罩
-- `.encrypted / .decrypted` - 内容区域
-- `.chars` - 加密字符样式
+专为 AI 产品设计 - 突出 AI 能力展示，强调交互体验
+开箱即用 - 不需要复杂配置，改改文案就能用
+打破传统AI的使用模式
 
-#### `a2ui-chat.css` - 聊天界面样式
-- 保持不变
 
-## 📁 新增文件
 
-```
-src/
-├── layouts/
-│   └── EvervaultLayout.astro      # 布局（加载原始资源）
-├── components/
-│   ├── EvervaultHero.astro        # Hero 组件
-│   └── FileStream.tsx             # React 动画组件 ⭐
-├── styles/
-│   └── filestream.css             # FileStream 样式
-└── pages/
-    ├── index.astro                # 原始页面（保留）
-    └── index-new.astro            # 重构后的页面 🆕
-```
 
-## 🎯 使用方法
 
-### 访问重构后的页面
 
-```bash
-# 启动开发服务器
-npm run dev
 
-# 访问新页面
-http://localhost:4323/index-new
-```
 
-### 对比测试
-
-- **原始页面**: `http://localhost:4323/` (使用 `public/index.html`)
-- **重构页面**: `http://localhost:4323/index-new` (使用模块化组件)
-
-## ✨ 重构优势
-
-### 1. **模块化**
-- ✅ 每个组件职责单一
-- ✅ 易于维护和扩展
-- ✅ 可复用性强
-
-### 2. **React 组件化动画**
-- ✅ `FileStream.tsx` 封装了复杂的动画逻辑
-- ✅ 使用 React Hooks 管理状态
-- ✅ 响应式和性能优化
-
-### 3. **保留原始效果**
-- ✅ 完全保留 Evervault 的 CSS 类名
-- ✅ 所有原始资源（CSS/JS/字体）正常加载
-- ✅ 动画效果完全一致
-
-### 4. **更灵活的定制**
-- ✅ 可以轻松修改品牌文案（EdgeOne）
-- ✅ 可以调整动画参数
-- ✅ 可以添加新的交互功能
-
-## 🔄 迁移计划
-
-1. **测试新页面** - 确保渲染效果完全一致 ✅
-2. **优化 FileStream** - 如需要，可添加更多动画细节
-3. **替换主页** - 将 `index-new.astro` 重命名为 `index.astro`
-4. **清理旧代码** - 删除 `public/index.html` 依赖
-
-## 📝 技术细节
-
-### FileStream 动画原理
-
-```
-┌─────────────────────────────┐
-│      FileStream Container    │
-│  ┌─────────────────────────┐ │
-│  │   Horizon (光线动画)    │ │
-│  │  ┌─────────────────────┐│ │
-│  │  │ horizon-line (扫描) ││ │
-│  │  │ horizon-glow (光晕) ││ │
-│  │  └─────────────────────┘│ │
-│  └─────────────────────────┘ │
-│  ┌───────────┬─────────────┐ │
-│  │ Mask Left │ Mask Right  │ │
-│  │(decrypted)│ (encrypted) │ │
-│  │           │   + chars   │ │
-│  └───────────┴─────────────┘ │
-└─────────────────────────────┘
-```
-
-### CSS 变量
-
-```css
---scale: 1;          /* 响应式缩放 */
---gap: 300;          /* 卡片间距 */
-```
-
-### React Hooks
-
-```typescript
-const [active, setActive] = useState(false);  // 动画激活状态
-const horizonRef = useRef<HTMLDivElement>(null);  // Horizon DOM 引用
-const containerRef = useRef<HTMLDivElement>(null);  // 容器 DOM 引用
-```
-
-## 🎨 动画时间轴
-
-```
-0ms     → 页面加载
-500ms   → FileStream 激活（setActive(true)）
-500ms   → Horizon 淡入（opacity: 0 → 1, 300ms）
-800ms   → 扫描动画开始（:after transform, 900ms）
-1700ms  → 动画完成
-```
-
-## 🐛 已知问题
-
-1. ~~图片路径问题~~ - 已用 CSS 渲染的卡片占位符替代
-2. 需要测试跨浏览器兼容性
-3. 可能需要优化移动端性能
-
-## 📚 参考资源
-
-- [Astro + React 集成文档](https://docs.astro.build/en/guides/integrations-guide/react/)
-- [CSS 混合模式](https://developer.mozilla.org/en-US/docs/Web/CSS/mix-blend-mode)
-- [React Hooks](https://react.dev/reference/react)
-
----
-
-**✅ 重构完成！页面效果完全保持一致，代码更加模块化和易维护。**

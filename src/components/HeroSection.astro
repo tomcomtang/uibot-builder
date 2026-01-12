@@ -3,7 +3,7 @@
  * Hero Section 组件 - 首屏主视觉区域
  * 包含标题、副标题、描述文本和 CTA 按钮
  */
-import StreamCanvas from './StreamCanvas.astro';
+import JsonToUICanvas from './JsonToUICanvas.astro';
 ---
 
 <header class="hero-section">
@@ -11,7 +11,7 @@ import StreamCanvas from './StreamCanvas.astro';
     <div class="hero-content" data-id="content">
       <!-- 粒子流动特效区域 -->
       <div class="canvas-wrapper">
-        <StreamCanvas />
+        <JsonToUICanvas />
         <!-- Mask 遮罩层：基准线左侧透明，右侧可见内容 -->
         <div class="particle-mask" data-position="right">
           <div class="particle-scroller" style="--gap: 300;">
@@ -163,14 +163,12 @@ import StreamCanvas from './StreamCanvas.astro';
       
       <!-- 标题文案区域 -->
       <div class="hero-text">
-        <h1 class="hero-title">AI-Powered Interactive Experience</h1>
-        <h2 class="hero-subtitle">Transform AI capabilities into intuitive, engaging user interfaces</h2>
+        <h1 class="hero-title">AI-Powered Interactive UI</h1>
+        <h2 class="hero-subtitle">Transform AI responses into intuitive interfaces</h2>
         <p class="hero-description">
-          Bridge the gap between artificial intelligence and human interaction. 
-          Our platform translates complex AI responses into beautiful, interactive components 
-          that users can understand and engage with naturally. Create rich, conversational 
-          experiences with intelligent visualizations, dynamic forms, and responsive feedback 
-          that make AI feel less like a black box and more like a collaborative partner.
+          Bridge AI and human interaction with beautiful, responsive components. 
+          Turn complex AI outputs into engaging visualizations and dynamic forms 
+          that users naturally understand.
         </p>
         <a class="cta-button Button-module__8cr-Ka__container" href="/contact" data-size="large" data-type="primary" data-pulse="false">
           Get Started
@@ -211,12 +209,13 @@ import StreamCanvas from './StreamCanvas.astro';
   .hero-content {
     position: relative;
     z-index: 1;
-    max-width: 1200px;
-    width: 100%;
-    padding: 0 2rem;
+    width: 100%; /* 和 gradient-background 一样宽 */
+    height: 100%; /* 铺满高度 */
+    padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* 垂直居中 */
   }
 
   .canvas-wrapper {
@@ -403,7 +402,7 @@ import StreamCanvas from './StreamCanvas.astro';
     align-items: center;
     gap: 1.5rem;
     pointer-events: all;
-    transform: translateY(-10%); /* 文案区域向上移动 10% */
+    max-width: 800px; /* 限制文案宽度 */
   }
 
   .hero-title {
