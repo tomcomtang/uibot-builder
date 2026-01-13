@@ -698,25 +698,28 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   }
 
   .chat-input-wrapper {
-    position: fixed; /* 固定输入框 */
-    bottom: 2rem; /* 往下一点 */
+    position: fixed;
+    bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    width: 100%;
-    max-width: 1000px; /* 和聊天内容宽度一致 */
-    padding: 0 1rem;
+    width: calc(100% - 2rem); /* 页面两侧间距 */
+    max-width: calc(1000px - 2rem); /* chat-messages 宽度 - 左右 padding (1rem * 2) */
+    padding-left: 36px; /* 只保留头像宽度 */
+    padding-right: 0;
+    box-sizing: border-box;
     z-index: 100;
   }
 
   .chat-input-container {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 0.75rem;
-    padding: 1rem;
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
-    border-radius: 28px;
+    border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
   }
 
   .chat-input {
@@ -725,12 +728,14 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     border: none;
     outline: none;
     color: #ffffff;
-    font-size: 1rem;
-    line-height: 1.5;
+    font-size: 0.95rem;
+    line-height: 1.4;
     resize: none;
     font-family: inherit;
+    height: 24px;
     min-height: 24px;
-    max-height: 200px;
+    max-height: 24px;
+    overflow: hidden;
   }
 
   .chat-input::placeholder {
@@ -739,8 +744,8 @@ import OriginalHeader from '../components/OriginalHeader.astro';
 
   .send-button {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
     border: none;
@@ -762,8 +767,8 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   }
 
   .send-button svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
   }
 
   @media (max-width: 768px) {
