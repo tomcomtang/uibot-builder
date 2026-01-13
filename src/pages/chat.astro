@@ -122,6 +122,22 @@ import OriginalHeader from '../components/OriginalHeader.astro';
               <span class="command-key">4</span>
               <span class="command-desc">或 "设置面板" - 查看交互组件</span>
             </div>
+            <div class="command-item">
+              <span class="command-key">5</span>
+              <span class="command-desc">或 "数据表格" - 查看Table组件</span>
+            </div>
+            <div class="command-item">
+              <span class="command-key">6</span>
+              <span class="command-desc">或 "数据展示" - 查看图表、进度条、统计</span>
+            </div>
+            <div class="command-item">
+              <span class="command-key">7</span>
+              <span class="command-desc">或 "媒体组件" - 查看视频、音频、画廊</span>
+            </div>
+            <div class="command-item">
+              <span class="command-key">8</span>
+              <span class="command-desc">或 "高级组件" - 查看日历、时间轴、轮播</span>
+            </div>
           </div>
         </div>
       </div>
@@ -189,6 +205,8 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     const message = chatInput?.value.trim();
     if (!message) return;
 
+    console.log('Sending message:', message); // 调试日志
+
     // 检查是否是 A2UI 命令
     const commandMap: Record<string, keyof typeof allMockExamples> = {
       '1': 'userProfile',
@@ -209,10 +227,34 @@ import OriginalHeader from '../components/OriginalHeader.astro';
       '4': 'settingsPanel',
       '设置面板': 'settingsPanel',
       'settings panel': 'settingsPanel',
-      '设置': 'settingsPanel'
+      '设置': 'settingsPanel',
+
+      '5': 'table',
+      '数据表格': 'table',
+      'table': 'table',
+      '表格': 'table',
+
+      '6': 'dataVisualization',
+      '数据展示': 'dataVisualization',
+      'data visualization': 'dataVisualization',
+      '图表': 'dataVisualization',
+      'chart': 'dataVisualization',
+
+      '7': 'media',
+      '媒体组件': 'media',
+      'media': 'media',
+      '视频': 'media',
+      'video': 'media',
+
+      '8': 'advanced',
+      '高级组件': 'advanced',
+      'advanced': 'advanced',
+      '日历': 'advanced',
+      'calendar': 'advanced'
     };
 
     const demoType = commandMap[message.toLowerCase()];
+    console.log('Demo type:', demoType); // 调试日志
 
     // 检查是否有欢迎消息
     const welcomeMsg = chatMessages?.querySelector('.welcome-message');
@@ -365,6 +407,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   // ============= A2UI Demo 功能 =============
 
   function renderA2UIDemo(demoType: keyof typeof allMockExamples) {
+    console.log('Rendering A2UI demo:', demoType); // 调试日志
     if (!chatMessages) return;
     
     // 添加 AI 消息容器
@@ -391,6 +434,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     
     // 每次都创建新的渲染器实例，确保每条消息独立
     const renderer = new A2UIRenderer(content);
+    console.log('Renderer created'); // 调试日志
     
     // 监听 action 事件
     content.addEventListener('a2ui:action', ((e: CustomEvent) => {
@@ -400,9 +444,17 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     
     // 处理所有消息
     const messages = allMockExamples[demoType];
-    messages.forEach((msg: any) => {
-      renderer.processMessage(msg);
-    });
+    console.log('Messages to render:', messages); // 调试日志
+    
+    try {
+      messages.forEach((msg: any, index: number) => {
+        console.log(`Processing message ${index}:`, msg); // 调试日志
+        renderer.processMessage(msg);
+      });
+      console.log('All messages processed successfully'); // 调试日志
+    } catch (error) {
+      console.error('Error processing messages:', error); // 错误日志
+    }
     
     // 先滚动到底部，确保新消息在可视区域
     const chatContainer = document.querySelector('.chat-container');

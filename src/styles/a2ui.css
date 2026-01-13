@@ -94,6 +94,13 @@
   box-sizing: border-box; /* 确保padding不影响宽度计算 */
 }
 
+/* Row中的Column等宽分配 - 用于统计数据等场景 */
+.a2ui-row > .a2ui-column {
+  flex: 1 1 0; /* 强制等分 */
+  min-width: 0; /* 允许收缩 */
+  text-align: center; /* 统计数据居中显示 */
+}
+
 .a2ui-row.align-start {
   justify-content: flex-start;
   align-items: flex-start;
@@ -422,6 +429,513 @@ textarea.a2ui-textfield-input {
   color: rgba(255, 255, 255, 0.7);
   font-variant-numeric: tabular-nums;
 }
+
+/* ============= 新增组件 ============= */
+
+/* Chart */
+.a2ui-chart-container {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.a2ui-chart {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Progress */
+.a2ui-progress-container {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.a2ui-progress-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.a2ui-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.a2ui-progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.a2ui-progress-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Badge */
+.a2ui-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 12px;
+  text-align: center;
+  line-height: 1;
+}
+
+.a2ui-badge.badge-default {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.a2ui-badge.badge-primary {
+  background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.a2ui-badge.badge-success {
+  background: #4ade80;
+  color: #065f46;
+}
+
+.a2ui-badge.badge-warning {
+  background: #fbbf24;
+  color: #92400e;
+}
+
+.a2ui-badge.badge-error {
+  background: #f87171;
+  color: #7f1d1d;
+}
+
+/* Statistic */
+.a2ui-statistic {
+  text-align: center;
+  padding: 16px;
+}
+
+.a2ui-statistic-title {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+}
+
+.a2ui-statistic-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.2;
+}
+
+.a2ui-statistic-prefix,
+.a2ui-statistic-suffix {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.a2ui-statistic-description {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 8px;
+}
+
+/* Video */
+.a2ui-video-container {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.a2ui-video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Audio */
+.a2ui-audio-container {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.a2ui-audio {
+  width: 100%;
+}
+
+/* Gallery */
+.a2ui-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.a2ui-gallery-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.a2ui-gallery-item:hover {
+  transform: scale(1.05);
+}
+
+.a2ui-gallery-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.a2ui-gallery-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Calendar */
+.a2ui-calendar {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 350px;
+}
+
+.a2ui-calendar-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.a2ui-calendar-header h3 {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.125rem;
+}
+
+.a2ui-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.a2ui-calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 8px 4px;
+  font-weight: 500;
+}
+
+.a2ui-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.a2ui-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.a2ui-calendar-day:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.a2ui-calendar-day.today {
+  background: rgba(102, 51, 238, 0.3);
+  color: #6633ee;
+  font-weight: 600;
+}
+
+.a2ui-calendar-day.selected {
+  background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.a2ui-calendar-day.empty {
+  cursor: default;
+}
+
+/* Timeline */
+.a2ui-timeline {
+  position: relative;
+  padding-left: 24px;
+}
+
+.a2ui-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.a2ui-timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.a2ui-timeline-dot {
+  position: absolute;
+  left: -20px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6633ee;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.a2ui-timeline-content {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.a2ui-timeline-time {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.a2ui-timeline-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4px;
+}
+
+.a2ui-timeline-description {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+/* Tree */
+.a2ui-tree {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.a2ui-tree-node {
+  margin: 4px 0;
+}
+
+.a2ui-tree-content {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.a2ui-tree-content:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.a2ui-tree-toggle {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.a2ui-tree-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.a2ui-tree-children {
+  margin-left: 16px;
+}
+
+/* Carousel */
+.a2ui-carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.a2ui-carousel-track {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.a2ui-carousel-slide {
+  min-width: 100%;
+  position: relative;
+}
+
+.a2ui-carousel-slide img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.a2ui-carousel-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 24px 20px 20px;
+  color: white;
+}
+
+.a2ui-carousel-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.a2ui-carousel-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.a2ui-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+.a2ui-carousel-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.a2ui-carousel-prev {
+  left: 16px;
+}
+
+.a2ui-carousel-next {
+  right: 16px;
+}
+
+.a2ui-carousel-indicators {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.a2ui-carousel-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.a2ui-carousel-indicator.active {
+  background: white;
+}
+
+/* Table */
+.a2ui-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.a2ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.a2ui-table-header {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.a2ui-table-row {
+  transition: background-color 0.2s ease;
+}
+
+.a2ui-table-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.a2ui-table-cell {
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.a2ui-table-row:last-child .a2ui-table-cell {
+  border-bottom: none;
+}
+
+
 
 /* ============= A2UI 消息容器样式 ============= */
 
