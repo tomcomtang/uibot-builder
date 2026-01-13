@@ -517,6 +517,9 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     z-index: 50; /* 在背景之上，在输入框之下 */
     /* 内容延迟淡入 */
     animation: contentFadeIn 0.5s ease-out 0.3s both;
+    /* 底部渐变遮罩 - 平滑淡出效果 */
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
   }
 
   @keyframes contentFadeIn {
