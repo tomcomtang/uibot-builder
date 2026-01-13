@@ -310,6 +310,29 @@ textarea.a2ui-textfield-input {
   max-height: 200px;
 }
 
+/* Row中的TextField布局优化 */
+.a2ui-row .a2ui-textfield-container {
+  flex: 1 1 0 !important;
+  min-width: 0 !important; /* 允许收缩 */
+  width: auto !important; /* 覆盖默认的width: 100% */
+}
+
+/* 确保Row中的TextField之间有适当间距 */
+.a2ui-row .a2ui-textfield-container + .a2ui-textfield-container {
+  margin-left: 16px;
+}
+
+/* 表单中Row之间的间距 */
+.a2ui-card .a2ui-row + .a2ui-row {
+  margin-top: 20px;
+}
+
+/* 表单中Row和其他元素之间的间距 */
+.a2ui-card .a2ui-row + .a2ui-textfield-container,
+.a2ui-card .a2ui-row + .a2ui-checkbox-container {
+  margin-top: 20px;
+}
+
 /* CheckBox */
 .a2ui-checkbox-container {
   display: flex;
@@ -450,7 +473,6 @@ textarea.a2ui-textfield-input {
     flex: 1 1 calc(50% - 8px);
     min-width: calc(50% - 8px);
   }
-}
 
   .a2ui-list {
     gap: 10px;
@@ -459,6 +481,21 @@ textarea.a2ui-textfield-input {
   .a2ui-textfield-input {
     padding: 9px 12px;
     font-size: 0.875rem;
+  }
+
+  /* 移动端表单布局：Row中的TextField垂直排列 */
+  .a2ui-row .a2ui-textfield-container {
+    flex: 1 1 100%;
+    margin-left: 0 !important;
+  }
+  
+  .a2ui-row .a2ui-textfield-container + .a2ui-textfield-container {
+    margin-top: 16px;
+  }
+
+  /* 移动端：表单Row改为垂直布局 */
+  .a2ui-card .a2ui-row {
+    flex-direction: column;
   }
 }
 

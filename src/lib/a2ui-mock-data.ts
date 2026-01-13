@@ -194,6 +194,8 @@ export const contactFormExample = [
       form: {
         name: '',
         email: '',
+        phone: '',
+        company: '',
         message: '',
         subscribe: false
       }
@@ -224,18 +226,46 @@ export const contactFormExample = [
             direction: 'horizontal'
           },
           {
-            type: 'TextField',
-            id: 'name-field',
-            label: 'Name',
-            placeholder: 'Enter your name',
-            dataBinding: '/form/name'
+            type: 'Row',
+            id: 'form-row-1',
+            alignment: 'start',
+            children: [
+              {
+                type: 'TextField',
+                id: 'name-field',
+                label: 'Name',
+                placeholder: 'Enter your name',
+                dataBinding: '/form/name'
+              },
+              {
+                type: 'TextField',
+                id: 'email-field',
+                label: 'Email',
+                placeholder: 'your.email@example.com',
+                dataBinding: '/form/email'
+              }
+            ]
           },
           {
-            type: 'TextField',
-            id: 'email-field',
-            label: 'Email',
-            placeholder: 'your.email@example.com',
-            dataBinding: '/form/email'
+            type: 'Row',
+            id: 'form-row-2',
+            alignment: 'start',
+            children: [
+              {
+                type: 'TextField',
+                id: 'phone-field',
+                label: 'Phone',
+                placeholder: '+1 (555) 123-4567',
+                dataBinding: '/form/phone'
+              },
+              {
+                type: 'TextField',
+                id: 'company-field',
+                label: 'Company',
+                placeholder: 'Your company name',
+                dataBinding: '/form/company'
+              }
+            ]
           },
           {
             type: 'TextField',
