@@ -104,41 +104,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
       <div class="chat-messages" id="chatMessages">
         <div class="welcome-message">
           <h2>👋 Welcome to A2UI Chat</h2>
-          <p>输入以下命令查看组件渲染效果：</p>
-          <div class="command-list">
-            <div class="command-item">
-              <span class="command-key">1</span>
-              <span class="command-desc">或 "用户资料" - 查看个人资料卡片</span>
-            </div>
-            <div class="command-item">
-              <span class="command-key">2</span>
-              <span class="command-desc">或 "联系表单" - 查看表单组件</span>
-            </div>
-            <div class="command-item">
-              <span class="command-key">3</span>
-              <span class="command-desc">或 "产品列表" - 查看动态列表</span>
-            </div>
-            <div class="command-item">
-              <span class="command-key">4</span>
-              <span class="command-desc">或 "设置面板" - 查看交互组件</span>
-            </div>
-            <div class="command-item">
-              <span class="command-key">5</span>
-              <span class="command-desc">或 "数据表格" - 查看Table组件</span>
-            </div>
-            <div class="command-item">
-              <span class="command-key">6</span>
-              <span class="command-desc">或 "数据展示" - 查看图表、进度条、统计</span>
-            </div>
-            <div class="command-item">
-              <span class="command-key">7</span>
-              <span class="command-desc">或 "媒体组件" - 查看视频、音频、画廊</span>
-            </div>
-            <div class="command-item">
-              <span class="command-key">8</span>
-              <span class="command-desc">或 "高级组件" - 查看日历、时间轴、轮播</span>
-            </div>
-          </div>
+          <p>Hi! I'm your AI assistant. Ask me anything or try typing keywords like "profile", "products" to see UI components.</p>
         </div>
       </div>
     </div>
@@ -596,6 +562,11 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     text-align: center;
     padding: 3rem 2rem;
     opacity: 0.8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 300px);
   }
 
   .welcome-message h2 {
@@ -610,52 +581,9 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   .welcome-message p {
     font-size: 1.125rem;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 1.5rem;
-  }
-
-  .command-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
     max-width: 500px;
     margin: 0 auto;
-  }
-
-  .command-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    text-align: left;
-    transition: all 0.2s ease;
-  }
-
-  .command-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.12);
-  }
-
-  .command-key {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: white;
-  }
-
-  .command-desc {
-    font-size: 0.9375rem;
-    color: rgba(255, 255, 255, 0.8);
-    line-height: 1.4;
+    line-height: 1.6;
   }
 
   .message {
