@@ -230,6 +230,15 @@ footer[class*="Footer-module"] {
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .message-avatar {
   flex: 0 0 36px !important;
   width: 36px !important;

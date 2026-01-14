@@ -10,6 +10,11 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.12",
+    "@ai-sdk/deepseek": "^2.0.5",
+    "@ai-sdk/google": "^3.0.7",
+    "@ai-sdk/openai": "^3.0.9",
+    "@ai-sdk/react": "^3.0.35",
     "@astrojs/react": "^4.4.2",
     "@google/generative-ai": "^0.24.1",
     "@types/react": "^19.2.8",
