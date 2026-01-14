@@ -20,9 +20,19 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
     }
   };
 
+  // Auto scroll when messages change or streaming status changes
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, status]);
+
+  // Also scroll when message content updates (for streaming)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100); // Small delay to ensure DOM updates
+    
+    return () => clearTimeout(timer);
+  }, [messages.length > 0 ? messages[messages.length - 1]?.parts : null]);
 
   // Check if message is A2UI command
   const isA2UICommand = (message: UIMessage) => {
@@ -84,7 +94,11 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
                 {message.role === 'assistant' && index > 0 && isA2UICommand(messages[index - 1]) && demoType ? (
                   <A2UIMessage demoType={getA2UIDemoType(messages[index - 1])!} />
                 ) : (
-                  <MessageContent message={message} isStreaming={isStreaming} />
+                  <MessageContent 
+                    message={message} 
+                    isStreaming={isStreaming} 
+                    onContentRendered={scrollToBottom}
+                  />
                 )}
                 
                 {/* Removed original streaming indicator, now handled inside MessageContent */}
@@ -99,7 +113,11 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
 };
 
 // Render message content (using AI SDK parts)
-const MessageContent: React.FC<{ message: UIMessage; isStreaming: boolean }> = ({ message, isStreaming }) => {
+const MessageContent: React.FC<{ 
+  message: UIMessage; 
+  isStreaming: boolean; 
+  onContentRendered?: () => void;
+}> = ({ message, isStreaming, onContentRendered }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
   
@@ -143,20 +161,30 @@ const MessageContent: React.FC<{ message: UIMessage; isStreaming: boolean }> = (
       
       try {
         rendererRef.current.processMessage(textMessage);
+        // Trigger scroll after content is rendered
+        setTimeout(() => {
+          onContentRendered?.();
+        }, 50);
       } catch (error) {
         console.error('Error rendering message:', error);
         // Fallback to simple text display
         if (contentRef.current) {
           contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
+          setTimeout(() => {
+            onContentRendered?.();
+          }, 50);
         }
       }
     } else if (!isStreaming && textContent) {
       // If A2UI renderer is not available, display text directly
       if (contentRef.current) {
         contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
+        setTimeout(() => {
+          onContentRendered?.();
+        }, 50);
       }
     }
-  }, [textContent, message.id, isStreaming]);
+  }, [textContent, message.id, isStreaming, onContentRendered]);
 
   // Show loading animation if streaming
   if (isStreaming) {
