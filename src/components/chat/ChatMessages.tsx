@@ -13,7 +13,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 自动滚动到底部
+  // Auto scroll to bottom
   const scrollToBottom = () => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -24,14 +24,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
     scrollToBottom();
   }, [messages]);
 
-  // 检查消息是否是A2UI命令
+  // Check if message is A2UI command
   const isA2UICommand = (message: UIMessage) => {
     if (message.role !== 'user') return false;
     const text = message.parts.find(part => part.type === 'text')?.text || '';
     return commandMap[text.toLowerCase()] !== undefined;
   };
 
-  // 获取A2UI演示类型
+  // Get A2UI demo type
   const getA2UIDemoType = (message: UIMessage): keyof typeof allMockExamples | null => {
     if (message.role !== 'user') return null;
     const text = message.parts.find(part => part.type === 'text')?.text || '';
@@ -80,14 +80,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
                 background: 'transparent',
                 border: 'none'
               }}>
-                {/* 如果是A2UI命令的下一条AI消息，显示A2UI演示 */}
+                {/* Show A2UI demo if this is an AI response to A2UI command */}
                 {message.role === 'assistant' && index > 0 && isA2UICommand(messages[index - 1]) && demoType ? (
                   <A2UIMessage demoType={getA2UIDemoType(messages[index - 1])!} />
                 ) : (
                   <MessageContent message={message} isStreaming={isStreaming} />
                 )}
                 
-                {/* 移除原来的流式指示器，现在在MessageContent内部处理 */}
+                {/* Removed original streaming indicator, now handled inside MessageContent */}
               </div>
             </div>
           );
@@ -98,12 +98,12 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
   );
 };
 
-// 渲染消息内容（使用AI SDK的parts）
+// Render message content (using AI SDK parts)
 const MessageContent: React.FC<{ message: UIMessage; isStreaming: boolean }> = ({ message, isStreaming }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
   
-  // 获取所有文本内容
+  // Get all text content
   const textContent = message.parts
     .filter(part => part.type === 'text')
     .map(part => part.text)
@@ -117,7 +117,7 @@ const MessageContent: React.FC<{ message: UIMessage; isStreaming: boolean }> = (
 
   useEffect(() => {
     if (rendererRef.current && textContent && !isStreaming) {
-      // 只有在不是流式状态时才渲染内容
+      // Only render content when not streaming
       if (contentRef.current) {
         contentRef.current.innerHTML = '';
       }
@@ -145,20 +145,20 @@ const MessageContent: React.FC<{ message: UIMessage; isStreaming: boolean }> = (
         rendererRef.current.processMessage(textMessage);
       } catch (error) {
         console.error('Error rendering message:', error);
-        // 降级到简单文本显示
+        // Fallback to simple text display
         if (contentRef.current) {
           contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
         }
       }
     } else if (!isStreaming && textContent) {
-      // 如果A2UI渲染器不可用，直接显示文本
+      // If A2UI renderer is not available, display text directly
       if (contentRef.current) {
         contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
       }
     }
   }, [textContent, message.id, isStreaming]);
 
-  // 如果正在流式传输，显示加载动画
+  // Show loading animation if streaming
   if (isStreaming) {
     return (
       <div style={{
@@ -178,7 +178,7 @@ const MessageContent: React.FC<{ message: UIMessage; isStreaming: boolean }> = (
   return <div ref={contentRef} />;
 };
 
-// 加载动画组件
+// Loading animation component
 const LoadingDots: React.FC = () => {
   return (
     <div className="loading-dots" style={{
@@ -203,7 +203,7 @@ const LoadingDots: React.FC = () => {
   );
 };
 
-// A2UI 演示消息组件
+// A2UI demo message component
 const A2UIMessage: React.FC<{ demoType: keyof typeof allMockExamples }> = ({ demoType }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -211,7 +211,7 @@ const A2UIMessage: React.FC<{ demoType: keyof typeof allMockExamples }> = ({ dem
     if (contentRef.current) {
       const renderer = new A2UIRenderer(contentRef.current);
       
-      // 监听 action 事件
+      // Listen for action events
       const handleAction = (e: CustomEvent) => {
         console.log('A2UI Action:', e.detail);
         alert(`Action: ${e.detail.actionName}\nData: ${JSON.stringify(e.detail.dataModel, null, 2)}`);
@@ -219,7 +219,7 @@ const A2UIMessage: React.FC<{ demoType: keyof typeof allMockExamples }> = ({ dem
       
       contentRef.current.addEventListener('a2ui:action', handleAction as EventListener);
       
-      // 处理所有消息
+      // Process all messages
       const messages = allMockExamples[demoType];
       try {
         messages.forEach((msg: any) => {
@@ -229,7 +229,7 @@ const A2UIMessage: React.FC<{ demoType: keyof typeof allMockExamples }> = ({ dem
         console.error('Error processing A2UI messages:', error);
       }
       
-      // 清理事件监听器
+      // Cleanup event listeners
       return () => {
         if (contentRef.current) {
           contentRef.current.removeEventListener('a2ui:action', handleAction as EventListener);
