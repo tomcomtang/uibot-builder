@@ -170,7 +170,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
           Turn complex AI outputs into engaging visualizations and dynamic forms 
           that users naturally understand.
         </p>
-        <button id="getStartedBtn" class="cta-button Button-module__8cr-Ka__container" data-size="large" data-type="primary" data-pulse="false">
+        <button id="getStartedBtn" class="cta-button">
           Get Started
         </button>
       </div>
@@ -187,27 +187,19 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
       e.preventDefault();
       
       // 添加点击动画效果
-      getStartedBtn.style.transform = 'scale(0.95)';
+      getStartedBtn.style.transform = 'scale(0.98)';
       getStartedBtn.style.transition = 'transform 0.1s ease';
       
       setTimeout(() => {
-        getStartedBtn.style.transform = 'scale(1)';
+        getStartedBtn.style.transform = '';
         
         // 跳转到 AI 对话页面
         window.location.href = '/chat';
       }, 100);
     });
     
-    // 添加 hover 效果增强
-    getStartedBtn.addEventListener('mouseenter', () => {
-      getStartedBtn.style.transform = 'translateY(-2px)';
-      getStartedBtn.style.boxShadow = '0 8px 24px rgba(102, 51, 238, 0.4)';
-    });
-    
-    getStartedBtn.addEventListener('mouseleave', () => {
-      getStartedBtn.style.transform = 'translateY(0)';
-      getStartedBtn.style.boxShadow = '';
-    });
+    // CSS hover 效果已经足够，不需要额外的 JS hover 处理
+    // 如果需要增强效果，可以在这里添加
   }
 </script>
 
@@ -466,7 +458,37 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
   }
 
   .cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    cursor: pointer;
     margin-top: 0.5rem;
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .cta-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 51, 238, 0.4);
+  }
+
+  .cta-button:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   /* 确保按钮 hover 动画不被覆盖 */

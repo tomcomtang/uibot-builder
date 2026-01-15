@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { A2UIRenderer } from '../../lib/a2ui-renderer';
-import type { UIMessage } from 'ai';
+import type { ChatMessage, ChatStatus } from './useCustomChat';
 
 interface ChatMessagesProps {
-  messages: UIMessage[];
-  status: 'ready' | 'streaming' | 'submitted' | 'error';
+  messages: ChatMessage[];
+  status: ChatStatus;
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status }) => {
@@ -97,19 +97,21 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status }) => {
   );
 };
 
-// Render message content (using AI SDK parts)
+// Render message content
 const MessageContent: React.FC<{ 
-  message: UIMessage; 
+  message: ChatMessage; 
   isStreaming: boolean;
 }> = ({ message, isStreaming }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
   
-  // Get all text content
+  // Get all text content (兼容 parts 和直接 content)
   const textContent = message.parts
-    .filter(part => part.type === 'text')
-    .map(part => part.text)
-    .join('');
+    ? message.parts
+        .filter(part => part.type === 'text')
+        .map(part => part.text)
+        .join('')
+    : message.content || '';
 
   // Check if content contains A2UI JSON messages (A2UI standard format)
   const isA2UIContent = (content: string): boolean => {
@@ -160,6 +162,21 @@ const MessageContent: React.FC<{
       }
     }
     
+    // Check for single JSON object that might be A2UI (but wrong format)
+    // This handles cases where AI returns wrong format but still has A2UI keywords
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed.createSurface || parsed.updateComponents || parsed.updateDataModel) {
+          console.warn('⚠️ Detected A2UI-like structure but in wrong format (single object instead of array)');
+          // Still return true so we can show error message
+          return true;
+        }
+      } catch (e) {
+        // Not valid JSON, ignore
+      }
+    }
+    
     // Fallback: check for old format with delimiter (backward compatibility)
     if (content.includes('---a2ui_JSON---')) {
       console.log('✅ Old A2UI format detected');
@@ -190,19 +207,38 @@ const MessageContent: React.FC<{
         
         return { 
           textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart, 
-          a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [] 
+          a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [],
+          error: null
         };
       } catch (error) {
         console.error('❌ Failed to parse JSON array:', error);
-        return { textPart: 'Failed to parse UI data', a2uiMessages: [] };
+        return { textPart: 'Failed to parse UI data', a2uiMessages: [], error: 'parse_error' };
       }
     }
     
     // Handle pure JSON format (A2UI standard)
     const trimmed = content.trim();
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-      console.log('🔧 Processing pure JSON format');
+      console.log('🔧 Processing pure JSON array format');
       return parseJSONPart(trimmed, '');
+    }
+    
+    // Handle single JSON object (wrong format, but might be A2UI-like)
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed.createSurface || parsed.updateComponents || parsed.updateDataModel) {
+          console.warn('⚠️ AI returned wrong format: single object instead of message array');
+          return {
+            textPart: '',
+            a2uiMessages: [],
+            error: 'wrong_format',
+            originalContent: content
+          };
+        }
+      } catch (e) {
+        // Not valid JSON, fall through
+      }
     }
     
     // Handle old format with delimiter (backward compatibility)
@@ -211,7 +247,7 @@ const MessageContent: React.FC<{
       const parts = content.split('---a2ui_JSON---');
       if (parts.length !== 2) {
         console.log('❌ Invalid delimiter count:', parts.length);
-        return { textPart: content, a2uiMessages: [] };
+        return { textPart: content, a2uiMessages: [], error: null };
       }
       
       let textPart = parts[0].trim();
@@ -233,7 +269,7 @@ const MessageContent: React.FC<{
       
       if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
         console.error('❌ No valid JSON array found');
-        return { textPart: textPart || 'UI generated!', a2uiMessages: [] };
+        return { textPart: textPart || 'UI generated!', a2uiMessages: [], error: null };
       }
       
       jsonPart = jsonPart.substring(startIndex, endIndex + 1);
@@ -244,7 +280,7 @@ const MessageContent: React.FC<{
     
     // Fallback: not A2UI content
     console.log('❌ Content is not A2UI format');
-    return { textPart: content, a2uiMessages: [] };
+    return { textPart: content, a2uiMessages: [], error: null };
   };
 
   // Helper function to parse JSON part
@@ -254,7 +290,8 @@ const MessageContent: React.FC<{
       console.log('✅ Successfully parsed A2UI messages:', a2uiMessages);
       return { 
         textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart, 
-        a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [] 
+        a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [],
+        error: null
       };
     } catch (error) {
       console.error('❌ Failed to parse A2UI JSON:', error);
@@ -274,11 +311,12 @@ const MessageContent: React.FC<{
         console.log('✅ Successfully parsed fixed JSON');
         return { 
           textPart: textPart || 'UI generated!', 
-          a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [] 
+          a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [],
+          error: null
         };
       } catch (fixError) {
         console.error('❌ JSON fix attempt failed:', fixError);
-        return { textPart: textPart || 'UI generated!', a2uiMessages: [] };
+        return { textPart: textPart || 'UI generated!', a2uiMessages: [], error: 'parse_error' };
       }
     }
   };
@@ -326,13 +364,34 @@ const MessageContent: React.FC<{
       if (isA2UI) {
         console.log('🎯 A2UI content detected! Processing...');
         // Process A2UI standard format response
-        const { textPart, a2uiMessages } = parseA2UIResponse(textContent);
+        const { textPart, a2uiMessages, error, originalContent } = parseA2UIResponse(textContent);
         
         console.log('🎯 A2UI processing result:', {
           textPart,
           messageCount: a2uiMessages.length,
-          messages: a2uiMessages
+          messages: a2uiMessages,
+          error
         });
+        
+        // Handle wrong format error
+        if (error === 'wrong_format') {
+          console.error('❌ AI returned wrong A2UI format (single object instead of message array)');
+          if (contentRef.current) {
+            contentRef.current.innerHTML = `
+              <div style="padding: 16px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); border-radius: 8px; color: white; margin-bottom: 12px;">
+                <div style="font-weight: 600; margin-bottom: 8px; color: #ffa500;">⚠️ Format Error</div>
+                <div style="font-size: 0.9em; margin-bottom: 12px; opacity: 0.9;">
+                  AI returned A2UI-like content but in wrong format. Expected message array format, got single object.
+                </div>
+                <details style="margin-top: 12px;">
+                  <summary style="cursor: pointer; font-size: 0.85em; opacity: 0.8;">Show raw response</summary>
+                  <pre style="margin-top: 8px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow-x: auto; font-size: 0.75em; line-height: 1.4;">${JSON.stringify(originalContent ? JSON.parse(originalContent) : textContent, null, 2)}</pre>
+                </details>
+              </div>
+            `;
+          }
+          return;
+        }
         
         // First render the text part if it exists (but make it smaller since main content is UI)
         if (textPart && textPart.trim() && contentRef.current) {

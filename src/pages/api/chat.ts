@@ -1,88 +1,401 @@
+/**
+ * A2UI-compatible API route using Google Gemini API
+ * Follows the exact same approach as A2UI official implementation
+ * Reference: A2UI/a2a_agents/python/a2ui_extension/src/a2ui/send_a2ui_to_client_toolset.py
+ */
+
 import type { APIRoute } from 'astro';
-import { createDeepSeek } from '@ai-sdk/deepseek';
-import { streamText, convertToModelMessages, type UIMessage } from 'ai';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { convertToModelMessages, type UIMessage } from 'ai';
+import { GoogleGenAI, Type } from '@google/genai';
 
-// A2UI System Prompt - Google v0.9 Official Standard Format
-const A2UI_SYSTEM_PROMPT = `You are an A2UI v0.9 compliant JSON generator following Google's official standard.
+// Load A2UI Schema (already wrapped as array in the JSON file, like A2UI)
+const getA2UISchema = () => {
+  try {
+    const schemaPath = join(process.cwd(), 'src/lib/a2ui-schema.json');
+    const schemaContent = readFileSync(schemaPath, 'utf-8');
+    return JSON.parse(schemaContent);
+  } catch (error) {
+    console.error('Failed to load A2UI schema:', error);
+    throw new Error('A2UI schema not found');
+  }
+};
 
-## TRIGGER WORDS (use A2UI format):
-创建, 制作, 生成, 设计, 显示, 展示, create, make, build, show, card, button, form, website, page, interface, 卡片, 按钮, 表单, 网站, 页面, 界面, top, richest, ranking, list, 排行, 榜单
+// Create A2UI system prompt (exactly like A2UI)
+const createA2UISystemPrompt = (a2uiSchema: any) => {
+  return `You are an A2UI v0.9 compliant UI generator. When the user requests to create, show, display, or build any UI interface, you MUST call the send_a2ui_json_to_client function.
 
-## A2UI v0.9 STANDARD: Return ONLY valid JSON array with these message types:
+## CRITICAL: When to Use A2UI
+If the user asks to:
+- create, make, build, show, display any UI, website, page, interface, card, button, form
+- show rankings, lists, top items
 
-1. createSurface (replaces beginRendering)
-2. updateComponents (replaces surfaceUpdate)
-3. updateDataModel (enhanced format)
+You MUST call the send_a2ui_json_to_client function. DO NOT respond with plain text.
 
-## EXACT JSON FORMAT (v0.9):
-[
-  {"createSurface":{"surfaceId":"unique_id","catalogId":"standard-catalog"}},
-  {"updateComponents":{"surfaceId":"unique_id","components":[{"id":"root","component":"Card","children":["content"]},{"id":"content","component":"Column","children":["item1","item2"],"justify":"start"},{"id":"item1","component":"Text","text":"TITLE","variant":"h2"},{"id":"item2","component":"Text","text":"CONTENT","variant":"body"}]}},
-  {"updateDataModel":{"surfaceId":"unique_id","actorId":"agent","updates":[{"path":"/data","value":{"key":"value"},"hlc":"2024-01-01T00:00:00.000Z:1:agent"}],"versions":{"agent":"2024-01-01T00:00:00.000Z:1:agent"}}}
-]
+## CRITICAL: Response Format
+You MUST call the send_a2ui_json_to_client function with a valid A2UI JSON array. Each message in the array is an object with exactly ONE key: createSurface, updateComponents, updateDataModel, or deleteSurface.
 
-## v0.9 COMPONENTS (Simplified Format):
-- Text: {"id":"ID","component":"Text","text":"VALUE","variant":"h1|h2|h3|h4|h5|body|caption"}
-- Image: {"id":"ID","component":"Image","url":"URL","variant":"icon|avatar|smallFeature|mediumFeature|largeFeature|header"}
-- Button: {"id":"ID","component":"Button","text":"LABEL","variant":"primary|secondary","action":{"type":"submit","target":"/api/action"}}
-- Card: {"id":"ID","component":"Card","children":["CHILD_IDS"]}
-- Row: {"id":"ID","component":"Row","children":["ID1","ID2"],"justify":"start|center|end|spaceBetween","align":"start|center|end|stretch"}
-- Column: {"id":"ID","component":"Column","children":["ID1","ID2"],"justify":"start|center|end|spaceBetween","align":"start|center|end|stretch"}
-- List: {"id":"ID","component":"List","children":["ID1","ID2"],"direction":"vertical|horizontal"}
+## A2UI JSON Schema Reference:
+---BEGIN A2UI JSON SCHEMA---
+${JSON.stringify(a2uiSchema, null, 2)}
+---END A2UI JSON SCHEMA---
 
-## DYNAMIC VALUES:
-- String literal: "text value"
-- Path reference: {"path":"/data/field"}
-- Function call: {"call":"functionName","args":{"param":"value"},"returnType":"string"}
+## IMPORTANT RULES:
+1. ALWAYS return a JSON array, not a single object
+2. createSurface MUST have "surfaceId" (not "id") and "catalogId" (use "standard-catalog")
+3. updateComponents MUST be an object with "surfaceId" and "components" array (not a direct array)
+4. Components MUST use "component" field (not "type"), and properties directly (not in "props" object)
+5. Component "id" field is REQUIRED
+6. Component "children" is an array of component IDs (strings), not nested objects
+7. Text component uses "text" and "variant" (h1, h2, h3, h4, h5, body, caption)
+8. Row/Column use "justify" and "align" properties (not "justifyContent", "alignItems")
+9. Button uses "action" object, not "actions" array
+10. One component MUST have id="root"
 
-## CRITICAL RULES (v0.9):
-1. Response MUST start with [ and end with ]
-2. NO text before or after JSON
-3. NO explanations or comments
-4. ALWAYS use "component" field directly (not nested object)
-5. Use "children" array for child IDs (not "child" or "explicitList")
-6. Include HLC timestamps in updateDataModel
-7. Valid JSON syntax only
+## For non-UI requests (general questions, explanations), respond with normal text only.`;
+};
 
-For non-UI requests, respond normally with text.`;
+// Check if request is UI generation request
+const isUIRequest = (messageText: string): boolean => {
+  return /create|make|build|show|card|button|form|website|page|interface|top|richest|ranking|list/.test(messageText.toLowerCase());
+};
+
+// Validate A2UI JSON (similar to A2UI source code)
+const validateA2UIJSON = (jsonStr: string, schema: any): any[] => {
+  try {
+    console.log('Validating A2UI JSON, input length:', jsonStr.length);
+    
+    let parsed: any;
+    try {
+      parsed = JSON.parse(jsonStr);
+      console.log('Parsed JSON successfully, type:', typeof parsed, 'Is array:', Array.isArray(parsed));
+    } catch (parseError: any) {
+      console.error('JSON parse error:', parseError.message);
+      throw new Error(`Invalid JSON string: ${parseError.message}`);
+    }
+
+    // If parsed object contains a2ui_json field, extract it
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) && parsed.a2ui_json) {
+      console.log('Found a2ui_json field, extracting...');
+      try {
+        parsed = typeof parsed.a2ui_json === 'string' 
+          ? JSON.parse(parsed.a2ui_json) 
+          : parsed.a2ui_json;
+      } catch (e) {
+        console.error('Failed to parse a2ui_json field:', e);
+        throw new Error('Failed to parse a2ui_json field');
+      }
+    }
+
+    // Must be an array
+    if (!Array.isArray(parsed)) {
+      console.error('Parsed result is not an array:', typeof parsed, parsed);
+      throw new Error(`A2UI JSON must be an array of messages, got ${typeof parsed}`);
+    }
+    
+    // Check for A2UI message structure
+    const hasA2UIStructure = parsed.some(msg => 
+      msg.createSurface || msg.updateComponents || msg.updateDataModel || msg.deleteSurface
+    );
+    if (!hasA2UIStructure) {
+      console.error('No valid A2UI message structure found in array');
+      throw new Error('No valid A2UI message structure found');
+    }
+
+    console.log('Validation passed, returning', parsed.length, 'messages');
+    return parsed;
+  } catch (error: any) {
+    console.error('Validation error:', error);
+    throw new Error(`Invalid A2UI JSON: ${error.message || error}`);
+  }
+};
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    console.log('🚀 Chat API called');
-    console.log('🔑 API Key available (import.meta):', !!import.meta.env.DEEPSEEK_API_KEY);
-    console.log('🔑 API Key available (process.env):', !!process.env.DEEPSEEK_API_KEY);
+    console.log('🚀 Google Gemini API called (A2UI原理)');
     
     const { messages }: { messages: UIMessage[] } = await request.json();
     console.log('📨 Received messages:', messages);
 
+    // Convert message format
     const modelMessages = await convertToModelMessages(messages);
-    console.log('🔄 Converted messages:', modelMessages);
 
-    // Add system prompt for A2UI generation
-    const messagesWithSystem = [
-      { role: 'system' as const, content: A2UI_SYSTEM_PROMPT },
-      ...modelMessages
-    ];
-
-    console.log('🎯 Sending to AI with system prompt');
+    // Get last user message
+    const lastMessage = messages[messages.length - 1];
+    const lastMessageText = lastMessage?.parts
+      ?.filter((part: any) => part.type === 'text')
+      ?.map((part: any) => part.text)
+      ?.join('') || '';
     
-    // Create DeepSeek client with API key
-    const deepseekClient = createDeepSeek({
-      apiKey: process.env.DEEPSEEK_API_KEY || import.meta.env.DEEPSEEK_API_KEY,
-    });
-    
-    const result = await streamText({
-      model: deepseekClient('deepseek-chat'),
-      messages: messagesWithSystem,
-      temperature: 0.05, // Even lower temperature for strict format
-    });
+    const isUI = isUIRequest(lastMessageText);
+    console.log('🎯 Is UI request:', isUI);
 
-    console.log('✅ AI response created, streaming...');
-    return result.toUIMessageStreamResponse();
-  } catch (error) {
+    const apiKey = process.env.GEMINI_API_KEY 
+      || process.env.Gemini_Api_Key
+      || import.meta.env.GEMINI_API_KEY 
+      || import.meta.env.Gemini_Api_Key;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY not found. Please set GEMINI_API_KEY or Gemini_Api_Key in .env.local');
+    }
+
+    // Initialize Google GenAI
+    const genAI = new GoogleGenAI({ apiKey });
+
+    // Build message list
+    const apiMessages: any[] = [];
+    
+    if (isUI) {
+      // UI request: Use Function Calling (exactly like A2UI)
+      const a2uiSchema = getA2UISchema();
+      const systemPrompt = createA2UISystemPrompt(a2uiSchema);
+      
+      // Add history messages
+      modelMessages.slice(0, -1).forEach((msg: any, index: number) => {
+        console.log(`📝 Processing history message ${index}:`, { role: msg.role, hasContent: !!msg.content });
+        
+        // Handle all possible role values: 'user', 'assistant', 'model', 'system'
+        if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
+          let msgContent = '';
+          if (typeof msg.content === 'string') {
+            msgContent = msg.content;
+          } else if (Array.isArray(msg.content)) {
+            const textPart = msg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
+            msgContent = textPart?.text || '';
+          }
+          if (msgContent) {
+            // Google Gemini API only accepts 'user' or 'model', not 'assistant'
+            const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
+            console.log(`✅ Adding message with role: ${geminiRole} (original: ${msg.role})`);
+            apiMessages.push({
+              role: geminiRole,
+              parts: [{ text: msgContent }]
+            });
+          }
+        } else {
+          console.warn(`⚠️ Skipping message with unknown role: ${msg.role}`);
+        }
+      });
+      
+      console.log(`📊 Total history messages added: ${apiMessages.length}`);
+
+      // Add current user message
+      const currentUserMsg = modelMessages[modelMessages.length - 1];
+      if (currentUserMsg && currentUserMsg.role === 'user') {
+        let userContent = '';
+        if (typeof currentUserMsg.content === 'string') {
+          userContent = currentUserMsg.content;
+        } else if (Array.isArray(currentUserMsg.content)) {
+          const textPart = currentUserMsg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
+          userContent = textPart?.text || '';
+        }
+        if (userContent) {
+          apiMessages.push({
+            role: 'user',
+            parts: [{ text: userContent }]
+          });
+        }
+      }
+
+      // Define Function Tool (exactly like A2UI)
+      const tools: any[] = [
+        {
+          functionDeclarations: [
+            {
+              name: 'send_a2ui_json_to_client',
+              description: 'Sends A2UI JSON to the client to render rich UI for the user. This tool can be called multiple times in the same call to render multiple UI surfaces. Args: a2ui_json: Valid A2UI JSON Schema to send to the client. The A2UI JSON Schema definition is between ---BEGIN A2UI JSON SCHEMA--- and ---END A2UI JSON SCHEMA--- in the system instructions.',
+              parameters: {
+                type: Type.OBJECT,
+                properties: {
+                  a2ui_json: {
+                    type: Type.STRING,
+                    description: 'valid A2UI JSON Schema to send to the client.'
+                  }
+                },
+                required: ['a2ui_json']
+              }
+            }
+          ]
+        }
+      ];
+
+      console.log('📋 Using Function Calling mode (A2UI原理)');
+      console.log('📤 Final apiMessages to send:', JSON.stringify(apiMessages.map(m => ({ role: m.role, textLength: m.parts?.[0]?.text?.length || 0 })), null, 2));
+
+      // Validate all messages have valid roles before sending
+      const invalidMessages = apiMessages.filter(m => m.role !== 'user' && m.role !== 'model');
+      if (invalidMessages.length > 0) {
+        console.error('❌ Invalid message roles found:', invalidMessages);
+        throw new Error(`Invalid message roles: ${invalidMessages.map(m => m.role).join(', ')}. Only 'user' and 'model' are allowed.`);
+      }
+
+      // Call Gemini API (exactly like A2UI)
+      const model = genAI.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: apiMessages,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.05,
+          tools: tools,
+        }
+      });
+
+      const response = await model;
+      console.log('✅ Gemini API response received');
+
+      // Process function call response (exactly like A2UI)
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
+        throw new Error('No candidates in response');
+      }
+
+      const candidate = candidates[0];
+      const functionCalls = candidate.content?.parts?.filter((part: any) => part.functionCall) || [];
+
+      if (functionCalls.length > 0) {
+        // Found function call
+        const a2uiFunctionCall = functionCalls.find((fc: any) => 
+          fc.functionCall?.name === 'send_a2ui_json_to_client'
+        );
+
+        if (a2uiFunctionCall?.functionCall?.args?.a2ui_json) {
+          const a2uiJsonStr = a2uiFunctionCall.functionCall.args.a2ui_json;
+          console.log('✅ Found A2UI function call, validating...');
+          
+          const a2uiMessages = validateA2UIJSON(String(a2uiJsonStr), a2uiSchema);
+          console.log('✅ Validated A2UI messages:', a2uiMessages.length, 'messages');
+          
+          const finalContent = JSON.stringify(a2uiMessages);
+          
+          // Return as AI SDK format
+          return new Response(
+            `0:${JSON.stringify({ type: 'text', text: finalContent })}\n`,
+            {
+              headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+              },
+            }
+          );
+        }
+      }
+
+      // No function call, return text content
+      const textContent = candidate.content?.parts
+        ?.filter((part: any) => part.text)
+        ?.map((part: any) => part.text)
+        ?.join('') || '';
+
+      return new Response(
+        `0:${JSON.stringify({ type: 'text', text: textContent })}\n`,
+        {
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+          },
+        }
+      );
+
+    } else {
+      // Non-UI request: Normal conversation
+      modelMessages.forEach((msg: any, index: number) => {
+        console.log(`📝 Processing message ${index}:`, { role: msg.role, hasContent: !!msg.content });
+        
+        // Handle all possible role values: 'user', 'assistant', 'model', 'system'
+        if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
+          let msgContent = '';
+          if (typeof msg.content === 'string') {
+            msgContent = msg.content;
+          } else if (Array.isArray(msg.content)) {
+            const textPart = msg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
+            msgContent = textPart?.text || '';
+          }
+          if (msgContent) {
+            // Google Gemini API only accepts 'user' or 'model', not 'assistant'
+            const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
+            console.log(`✅ Adding message with role: ${geminiRole} (original: ${msg.role})`);
+            apiMessages.push({
+              role: geminiRole,
+              parts: [{ text: msgContent }]
+            });
+          }
+        } else {
+          console.warn(`⚠️ Skipping message with unknown role: ${msg.role}`);
+        }
+      });
+      
+      console.log(`📊 Total messages added: ${apiMessages.length}`);
+      console.log('📤 Final apiMessages to send:', JSON.stringify(apiMessages.map(m => ({ role: m.role, textLength: m.parts?.[0]?.text?.length || 0 })), null, 2));
+
+      // Validate all messages have valid roles before sending
+      const invalidMessages = apiMessages.filter(m => m.role !== 'user' && m.role !== 'model');
+      if (invalidMessages.length > 0) {
+        console.error('❌ Invalid message roles found:', invalidMessages);
+        throw new Error(`Invalid message roles: ${invalidMessages.map(m => m.role).join(', ')}. Only 'user' and 'model' are allowed.`);
+      }
+
+      const model = genAI.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: apiMessages,
+        config: {
+          temperature: 0.7,
+        }
+      });
+
+      const response = await model;
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
+        throw new Error('No candidates in response');
+      }
+
+      const textContent = candidates[0].content?.parts
+        ?.filter((part: any) => part.text)
+        ?.map((part: any) => part.text)
+        ?.join('') || '';
+
+      return new Response(
+        `0:${JSON.stringify({ type: 'text', text: textContent })}\n`,
+        {
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+          },
+        }
+      );
+    }
+
+  } catch (error: any) {
     console.error('❌ Chat API error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
+    console.error('❌ Error details:', JSON.stringify(error, null, 2));
+    
+    // Extract detailed error from Google GenAI
+    const apiError = error?.error || error?.response?.error || error;
+    const apiErrorMessage = apiError?.message || error?.message || String(error);
+    const apiErrorCode = apiError?.code || error?.status || error?.statusCode || 500;
+    
+    // Determine status code based on error code
+    let statusCode = 500;
+    if (apiErrorCode === 403 || apiErrorCode === 401) {
+      statusCode = 401;
+    } else if (apiErrorCode === 400) {
+      statusCode = 400;
+    } else if (apiErrorCode === 429) {
+      statusCode = 429;
+    }
+    
+    // Return the REAL error message, not a hardcoded one
+    return new Response(JSON.stringify({ 
+      error: 'API Error',
+      message: apiErrorMessage, // Return the actual error message
+      details: {
+        apiError: apiError,
+        code: apiErrorCode,
+        status: apiError?.status,
+        fullError: error,
+        // Include helpful info if it's an API key issue
+        suggestion: (apiErrorCode === 403 || apiErrorCode === 401 || apiErrorMessage?.includes('API key')) 
+          ? 'Please check your GEMINI_API_KEY at https://aistudio.google.com/'
+          : undefined
+      }
+    }), {
+      status: statusCode,
       headers: { 'Content-Type': 'application/json' },
     });
   }

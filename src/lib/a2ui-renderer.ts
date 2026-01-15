@@ -31,7 +31,8 @@ export class A2UIRenderer {
       this.dataModels,
       this.componentElements,
       this.rootComponents,
-      this.componentFactory
+      this.componentFactory,
+      this.propertyResolver
     );
   }
 

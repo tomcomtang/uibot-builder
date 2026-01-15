@@ -1,20 +1,15 @@
 import React from 'react';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { useCustomChat } from './useCustomChat';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 
 const ChatPage: React.FC = () => {
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-    }),
-  });
+  const { messages, sendMessage, status } = useCustomChat();
 
   // 处理发送消息
   const handleSendMessage = async (messageText: string) => {
     // 发送给AI处理
-    sendMessage({ text: messageText });
+    await sendMessage({ text: messageText });
   };
 
   return (
