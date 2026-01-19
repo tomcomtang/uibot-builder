@@ -115,7 +115,7 @@
         },
         "component": {
           "type": "string",
-          "enum": ["Text", "Image", "Icon", "Video", "AudioPlayer", "Row", "Column", "List", "Card", "Tabs", "Modal", "Divider", "Button", "TextField", "CheckBox", "ChoicePicker", "Slider", "DateTimeInput"]
+          "enum": ["Text", "Image", "Icon", "Video", "AudioPlayer", "Row", "Column", "List", "Card", "Divider", "Button", "TextField", "CheckBox", "ChoicePicker", "Slider", "DateTimeInput", "Chart"]
         },
         "weight": {
           "type": "number",
@@ -133,12 +133,12 @@
                   { "type": "string" },
                   { "$ref": "#/$defs/DynamicString" }
                 ],
-                "description": "Text content to display"
+                "description": "The text content to display. Use variant to specify the text style (h1-h5 for headings, body for regular text, caption for small text)."
               },
               "variant": {
                 "type": "string",
                 "enum": ["h1", "h2", "h3", "h4", "h5", "caption", "body"],
-                "description": "Text style variant"
+                "description": "A hint for the base text style. Use h1-h5 for headings/titles (h1 is largest, h5 is smallest). Use 'body' for regular paragraph text. Use 'caption' for small descriptive text. When displaying titles in cards or lists, prefer h3 or h4 for card titles, and 'body' for descriptions."
               }
             },
             "required": ["text"]
@@ -306,18 +306,23 @@
               "children": {
                 "type": "array",
                 "items": { "type": "string" },
-                "description": "Array containing button content (usually Text or Icon)"
+                "description": "Array containing button content (usually Text or Icon component IDs)"
               },
               "primary": {
                 "type": "boolean",
-                "description": "Whether this is a primary button"
+                "description": "Whether this is a primary button (use true for main actions like 'View Details', 'Learn More', etc.)"
               },
               "action": {
                 "type": "object",
+                "description": "The action to trigger when button is clicked. Use action.name='navigate' or 'viewDetails' for navigation actions. The action.context can contain additional data like item ID, title, etc. For 'View Details' or 'Learn More' buttons, use action.name='navigate' with context containing the item information.",
                 "properties": {
-                  "name": { "type": "string" },
+                  "name": { 
+                    "type": "string",
+                    "description": "Action name. Common values: 'navigate' (for going to next level/details), 'viewDetails', 'learnMore', 'submit', etc. Use 'navigate' when the button should show more information or go to a detail page."
+                  },
                   "context": {
                     "type": "object",
+                    "description": "Additional context data for the action. For navigation actions, include relevant information like item ID, title, description, etc. that will be sent to the AI to generate the next level content.",
                     "additionalProperties": true
                   }
                 },
@@ -381,6 +386,89 @@
                 "default": "horizontal"
               }
             }
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Slider" } } },
+          "then": {
+            "properties": {
+              "label": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              },
+              "min": { "type": "number" },
+              "max": { "type": "number" },
+              "value": {
+                "oneOf": [
+                  { "type": "number" },
+                  { "$ref": "#/$defs/DynamicNumber" }
+                ]
+              }
+            },
+            "required": ["value", "min", "max"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "DateTimeInput" } } },
+          "then": {
+            "properties": {
+              "value": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              },
+              "enableDate": { "type": "boolean" },
+              "enableTime": { "type": "boolean" },
+              "label": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "ChoicePicker" } } },
+          "then": {
+            "properties": {
+              "label": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              },
+              "variant": {
+                "type": "string",
+                "enum": ["multipleSelection", "mutuallyExclusive"]
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/$defs/DynamicString" }
+                      ]
+                    },
+                    "value": { "type": "string" }
+                  },
+                  "required": ["label", "value"]
+                }
+              },
+              "value": {
+                "oneOf": [
+                  { "type": "array", "items": { "type": "string" } },
+                  { "$ref": "#/$defs/DynamicStringList" }
+                ]
+              }
+            },
+            "required": ["options", "value"]
           }
         }
       ],

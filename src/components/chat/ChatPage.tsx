@@ -21,6 +21,7 @@ const ChatPage: React.FC = () => {
       <ChatMessages 
         messages={messages} 
         status={status}
+        onSendMessage={sendMessage}
       />
       
       {/* 固定的输入框 - 独立层 */}

@@ -53,6 +53,55 @@ ${JSON.stringify(a2uiSchema, null, 2)}
 9. Button uses "action" object, not "actions" array
 10. One component MUST have id="root"
 
+## COMPONENT USAGE GUIDELINES:
+- Use Card component to group related content (images, text, buttons) together. Cards provide visual separation and structure.
+- Use Row component to arrange items horizontally (e.g., multiple cards side by side, buttons in a row).
+- Use Column component to arrange items vertically (e.g., stacking cards, vertical lists).
+- When showing multiple items (like buildings, products, etc.), wrap each item in a Card, then place Cards in a Row.
+- Example structure for displaying multiple items:
+  * Root: Column (vertical layout)
+    * Row (horizontal layout for multiple items)
+      * Card (item 1: Image + Text + Button)
+      * Card (item 2: Image + Text + Button)
+      * Card (item 3: Image + Text + Button)
+
+## CHART COMPONENT GUIDELINES:
+- Use Chart component to display data visualizations (line charts, bar charts, pie charts, etc.)
+- Chart data format:
+  * For line/bar charts: data array with [{x: 'Label', y: number}] or [{label: 'Label', value: number}]
+  * For pie/doughnut charts: data array with [{label: 'Label', value: number}]
+  * For radar/polarArea charts: data array with [{label: 'Label', value: number}]
+- Chart types: 'line' (line chart), 'bar' (bar chart), 'pie' (pie chart), 'doughnut' (doughnut chart), 'radar' (radar chart), 'polarArea' (polar area chart)
+- Always provide a title for the chart to help users understand what data is being displayed
+- For line/bar charts, provide xLabel and yLabel to describe the axes
+- Example Chart component:
+  {
+    "id": "sales_chart",
+    "component": "Chart",
+    "type": "bar",
+    "title": "Monthly Sales",
+    "xLabel": "Month",
+    "yLabel": "Sales ($)",
+    "data": [
+      {"x": "Jan", "y": 1000},
+      {"x": "Feb", "y": 1500},
+      {"x": "Mar", "y": 1200}
+    ]
+  }
+
+## IMAGE URL GUIDELINES:
+- When using Image components, ONLY use URLs from reliable sources that are likely to exist:
+  * Wikimedia Commons: https://upload.wikimedia.org/wikipedia/commons/...
+  * Unsplash: https://images.unsplash.com/... or https://unsplash.com/photos/...
+  * Pexels: https://images.pexels.com/...
+  * Placeholder services: https://via.placeholder.com/... or https://picsum.photos/...
+- DO NOT use URLs from:
+  * Random websites you don't know exist
+  * URLs that might be outdated or broken
+  * URLs from your training data that you're not certain are still valid
+- If you cannot find a reliable image URL, you can omit the Image component and use only Text components to describe the item.
+- When in doubt about image availability, prefer text-only content over potentially broken image URLs.
+
 ## For non-UI requests (general questions, explanations), respond with normal text only.`;
 };
 
@@ -258,14 +307,19 @@ export const POST: APIRoute = async ({ request }) => {
           fc.functionCall?.name === 'send_a2ui_json_to_client'
         );
 
-        if (a2uiFunctionCall?.functionCall?.args?.a2ui_json) {
-          const a2uiJsonStr = a2uiFunctionCall.functionCall.args.a2ui_json;
-          console.log('✅ Found A2UI function call, validating...');
-          
-          const a2uiMessages = validateA2UIJSON(String(a2uiJsonStr), a2uiSchema);
-          console.log('✅ Validated A2UI messages:', a2uiMessages.length, 'messages');
-          
-          const finalContent = JSON.stringify(a2uiMessages);
+              if (a2uiFunctionCall?.functionCall?.args?.a2ui_json) {
+                const a2uiJsonStr = a2uiFunctionCall.functionCall.args.a2ui_json;
+                console.log('✅ Found A2UI function call, validating...');
+
+                const a2uiMessages = validateA2UIJSON(String(a2uiJsonStr), a2uiSchema);
+                console.log('✅ Validated A2UI messages:', a2uiMessages.length, 'messages');
+                
+                // Print final AI JSON configuration to console
+                console.log('🎨 ========== Final AI JSON Configuration ==========');
+                console.log(JSON.stringify(a2uiMessages, null, 2));
+                console.log('🎨 =================================================');
+
+                const finalContent = JSON.stringify(a2uiMessages);
           
           // Return as AI SDK format
           return new Response(
@@ -361,42 +415,64 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-  } catch (error: any) {
-    console.error('❌ Chat API error:', error);
-    console.error('❌ Error details:', JSON.stringify(error, null, 2));
-    
-    // Extract detailed error from Google GenAI
-    const apiError = error?.error || error?.response?.error || error;
-    const apiErrorMessage = apiError?.message || error?.message || String(error);
-    const apiErrorCode = apiError?.code || error?.status || error?.statusCode || 500;
-    
-    // Determine status code based on error code
-    let statusCode = 500;
-    if (apiErrorCode === 403 || apiErrorCode === 401) {
-      statusCode = 401;
-    } else if (apiErrorCode === 400) {
-      statusCode = 400;
-    } else if (apiErrorCode === 429) {
-      statusCode = 429;
-    }
-    
-    // Return the REAL error message, not a hardcoded one
-    return new Response(JSON.stringify({ 
-      error: 'API Error',
-      message: apiErrorMessage, // Return the actual error message
-      details: {
-        apiError: apiError,
-        code: apiErrorCode,
-        status: apiError?.status,
-        fullError: error,
-        // Include helpful info if it's an API key issue
-        suggestion: (apiErrorCode === 403 || apiErrorCode === 401 || apiErrorMessage?.includes('API key')) 
-          ? 'Please check your GEMINI_API_KEY at https://aistudio.google.com/'
-          : undefined
-      }
-    }), {
-      status: statusCode,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+        } catch (error: any) {
+          console.error('❌ Chat API error:', error);
+          console.error('❌ Error details:', JSON.stringify(error, null, 2));
+
+          // Extract detailed error from Google GenAI
+          const apiError = error?.error || error?.response?.error || error;
+          const apiErrorMessage = apiError?.message || error?.message || String(error);
+          const apiErrorCode = apiError?.code || error?.status || error?.statusCode || 500;
+
+          // Determine status code based on error code
+          let statusCode = 500;
+          if (apiErrorCode === 403 || apiErrorCode === 401) {
+            statusCode = 401;
+          } else if (apiErrorCode === 400) {
+            statusCode = 400;
+          } else if (apiErrorCode === 429) {
+            statusCode = 429;
+          }
+
+          // Extract retry delay for quota errors
+          let retryDelay: number | undefined;
+          let quotaInfo: string | undefined;
+          if (apiErrorCode === 429 || apiErrorMessage?.includes('quota') || apiErrorMessage?.includes('Quota exceeded')) {
+            // Try to extract retry delay from error details
+            const retryInfo = apiError?.details?.find((d: any) => d['@type']?.includes('RetryInfo'));
+            if (retryInfo?.retryDelay) {
+              retryDelay = parseInt(retryInfo.retryDelay) || undefined;
+            }
+            
+            // Extract quota information
+            const quotaFailure = apiError?.details?.find((d: any) => d['@type']?.includes('QuotaFailure'));
+            if (quotaFailure?.violations?.[0]) {
+              const violation = quotaFailure.violations[0];
+              quotaInfo = `Limit: ${violation.quotaValue || 'unknown'}, Metric: ${violation.quotaMetric || 'unknown'}`;
+            }
+          }
+
+          // Return the REAL error message, not a hardcoded one
+          return new Response(JSON.stringify({
+            error: 'API Error',
+            message: apiErrorMessage, // Return the actual error message
+            details: {
+              apiError: apiError,
+              code: apiErrorCode,
+              status: apiError?.status,
+              fullError: error,
+              // Include helpful info based on error type
+              suggestion: (apiErrorCode === 403 || apiErrorCode === 401 || apiErrorMessage?.includes('API key'))
+                ? 'Please check your GEMINI_API_KEY at https://aistudio.google.com/'
+                : (apiErrorCode === 429 || apiErrorMessage?.includes('quota'))
+                ? `Quota exceeded. ${quotaInfo ? `(${quotaInfo})` : ''} ${retryDelay ? `Please retry in ${Math.ceil(retryDelay)} seconds.` : 'Please wait and try again later.'} Free tier limit: 20 requests per day. Upgrade at https://ai.google.dev/pricing`
+                : undefined,
+              retryDelay: retryDelay,
+              quotaInfo: quotaInfo
+            }
+          }), {
+            status: statusCode,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
 };

@@ -1,15 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { A2UIRenderer } from '../../lib/a2ui-renderer';
 import type { ChatMessage, ChatStatus } from './useCustomChat';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
   status: ChatStatus;
+  onSendMessage?: (message: { text: string }) => Promise<void>;
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status }) => {
+const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMessage }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const sendMessageRef = useRef<((message: { text: string }) => Promise<void>) | null>(null);
 
   // Debug logging
   console.log('🎭 ChatMessages render:', {
@@ -86,6 +88,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status }) => {
                 <MessageContent 
                   message={message} 
                   isStreaming={isStreaming}
+                  onSendMessage={onSendMessage}
                 />
               </div>
             </div>
@@ -101,7 +104,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status }) => {
 const MessageContent: React.FC<{ 
   message: ChatMessage; 
   isStreaming: boolean;
-}> = ({ message, isStreaming }) => {
+  onSendMessage?: (message: { text: string }) => Promise<void>;
+}> = ({ message, isStreaming, onSendMessage }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
   
@@ -321,13 +325,53 @@ const MessageContent: React.FC<{
     }
   };
 
+  // Handle button actions
+  const handleAction = useCallback((action: any) => {
+    console.log('🔘 Button action triggered:', action);
+    
+    if (!onSendMessage) {
+      console.warn('⚠️ onSendMessage not available, action will be ignored');
+      return;
+    }
+
+    // Build message based on action
+    let messageText = '';
+    
+    if (action.name === 'navigate' || action.name === 'viewDetails' || action.name === 'learnMore') {
+      // For navigation actions, build a descriptive message
+      const context = action.context || {};
+      const itemTitle = context.title || context.name || context.id || 'this item';
+      const itemDescription = context.description || '';
+      
+      if (action.name === 'navigate') {
+        messageText = `Show me more details about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
+      } else if (action.name === 'viewDetails') {
+        messageText = `Show detailed information about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
+      } else {
+        messageText = `Tell me more about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
+      }
+    } else {
+      // For other actions, use context to build message
+      const context = action.context || {};
+      const actionDescription = JSON.stringify(context);
+      messageText = `Execute action: ${action.name}${actionDescription ? ' with context: ' + actionDescription : ''}`;
+    }
+
+    if (messageText) {
+      console.log('📤 Sending message to AI:', messageText);
+      onSendMessage({ text: messageText }).catch(error => {
+        console.error('❌ Failed to send action message:', error);
+      });
+    }
+  }, [onSendMessage]);
+
   useEffect(() => {
     if (contentRef.current && !rendererRef.current) {
       console.log('🏗️ Initializing A2UI renderer...');
-      rendererRef.current = new A2UIRenderer(contentRef.current);
+      rendererRef.current = new A2UIRenderer(contentRef.current, handleAction);
       console.log('✅ A2UI renderer initialized successfully');
     }
-  }, [contentRef.current]); // 依赖于contentRef.current的变化
+  }, [contentRef.current, handleAction]); // 依赖于contentRef.current和handleAction的变化
 
   useEffect(() => {
     console.log('📊 MessageContent useEffect triggered:', {
@@ -341,7 +385,7 @@ const MessageContent: React.FC<{
     // 确保渲染器已初始化
     if (contentRef.current && !rendererRef.current) {
       console.log('🏗️ Late initializing A2UI renderer...');
-      rendererRef.current = new A2UIRenderer(contentRef.current);
+      rendererRef.current = new A2UIRenderer(contentRef.current, handleAction);
       console.log('✅ A2UI renderer late initialized successfully');
     }
 

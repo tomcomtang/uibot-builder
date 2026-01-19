@@ -18,13 +18,15 @@ export class A2UIRenderer {
   private propertyResolver: PropertyResolver;
   private componentFactory: ComponentFactory;
   private messageHandlers: MessageHandlers;
+  private actionHandler?: (action: any) => void;
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, actionHandler?: (action: any) => void) {
     this.container = container;
+    this.actionHandler = actionHandler;
     
     // Initialize sub-modules
     this.propertyResolver = new PropertyResolver(this.dataModels);
-    this.componentFactory = new ComponentFactory(this.propertyResolver, this.componentElements);
+    this.componentFactory = new ComponentFactory(this.propertyResolver, this.componentElements, this.handleAction.bind(this));
     this.messageHandlers = new MessageHandlers(
       this.container,
       this.surfaces,
@@ -34,6 +36,23 @@ export class A2UIRenderer {
       this.componentFactory,
       this.propertyResolver
     );
+  }
+
+  /**
+   * Handle component action (e.g., button click)
+   */
+  private handleAction(action: any): void {
+    console.log('🔘 Action triggered:', action);
+    
+    if (this.actionHandler) {
+      this.actionHandler(action);
+    } else {
+      // Default behavior: dispatch custom event
+      const event = new CustomEvent('a2ui:action', {
+        detail: action
+      });
+      document.dispatchEvent(event);
+    }
   }
 
   /**
