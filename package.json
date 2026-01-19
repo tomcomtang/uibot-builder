@@ -16,6 +16,7 @@
     "@ai-sdk/openai": "^3.0.9",
     "@ai-sdk/react": "^3.0.35",
     "@astrojs/react": "^4.4.2",
+    "@edgeone/astro": "^1.0.6",
     "@google/genai": "^1.36.0",
     "@google/generative-ai": "^0.24.1",
     "@types/react": "^19.2.8",
@@ -24,10 +25,13 @@
     "astro": "5.16.3",
     "openai": "^4.77.3",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/node": "^9.5.2",
+    "@types/three": "^0.182.0",
     "typescript": "^5.7.3"
   }
 }

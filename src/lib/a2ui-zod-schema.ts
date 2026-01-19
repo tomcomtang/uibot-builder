@@ -7,13 +7,6 @@
 
 import { z } from 'zod';
 
-// 基础类型
-const DynamicString = z.union([
-  z.string(),
-  z.object({ path: z.string() }),
-  z.object({ call: z.string(), args: z.record(z.any()).optional() })
-]);
-
 // CreateSurface Message
 const CreateSurfaceMessage = z.object({
   createSurface: z.object({

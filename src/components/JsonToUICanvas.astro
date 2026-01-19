@@ -27,20 +27,21 @@
   }
 </style>
 
-<script>
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js';
-
+<script is:inline>
   // JSON character set
   const JSON_CHARS = ['{', '}', '[', ']', '"', ':', ',', 'data', 'type', 'value', 'props'];
   
   // UI component types
-  enum UIComponentType {
-    INPUT = 'input',
-    BUTTON = 'button',
-    CARD = 'card',
-    CHECKBOX = 'checkbox',
-    SLIDER = 'slider'
-  }
+  const UIComponentType = {
+    INPUT: 'input',
+    BUTTON: 'button',
+    CARD: 'card',
+    CHECKBOX: 'checkbox',
+    SLIDER: 'slider'
+  };
+
+  // Load Three.js from CDN
+  import('https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js').then((THREE) => {
 
   // Random color pool (rich and colorful)
   const COLORS = [
@@ -56,27 +57,12 @@
     '#5a2ee6', // Blue-purple
   ];
 
-  interface Particle {
-    mesh: THREE.Mesh;
-    velocity: THREE.Vector3;
-    startX: number;
-    phase: 'json' | 'transition' | 'ui';
-    targetType?: UIComponentType;
-    rotationSpeed: number;
-    color: string; // Particle color
-    currentText?: string; // Currently displayed text (for width calculation)
-  }
-
   class JsonToUIAnimation {
-    private canvas: HTMLCanvasElement;
-    private scene!: THREE.Scene;
-    private camera!: THREE.PerspectiveCamera;
-    private renderer!: THREE.WebGLRenderer;
-    private particles: Particle[] = [];
-    private particleCount = 50; // Increase count for richer visuals
-
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(canvas) {
       this.canvas = canvas;
+      this.particles = [];
+      this.particleCount = 50;
+      this.uiTextureCache = new Map();
       this.init();
       this.createParticles();
       this.animate();
@@ -87,7 +73,7 @@
     init() {
       this.scene = new THREE.Scene();
 
-      const wrapper = this.canvas.parentElement!;
+      const wrapper = this.canvas.parentElement;
       const aspect = wrapper.clientWidth / wrapper.clientHeight;
       this.camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
       this.camera.position.z = 400;
@@ -102,13 +88,13 @@
     }
 
     // Create JSON text texture (neon glow effect)
-    createTextTexture(text: string, color: string = '#6432e6'): THREE.CanvasTexture {
+    createTextTexture(text, color = '#6432e6') {
       const canvas = document.createElement('canvas');
       // Dynamically adjust canvas width based on text length
       const width = text.length > 2 ? 512 : 256;
       canvas.width = width;
       canvas.height = 256;
-      const ctx = canvas.getContext('2d')!;
+      const ctx = canvas.getContext('2d');
       
       ctx.font = '120px monospace';
       ctx.textAlign = 'center';
@@ -145,11 +131,11 @@
     }
 
     // Create UI component icon texture (neon glow effect)
-    createUIIconTexture(type: UIComponentType, color: string = '#8a2be2'): THREE.CanvasTexture {
+    createUIIconTexture(type, color = '#8a2be2') {
       const canvas = document.createElement('canvas');
       canvas.width = 256;
       canvas.height = 256;
-      const ctx = canvas.getContext('2d')!;
+      const ctx = canvas.getContext('2d');
       
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
@@ -230,7 +216,7 @@
 
     createParticles() {
       const uiTypes = Object.values(UIComponentType);
-      const wrapper = this.canvas.parentElement!;
+      const wrapper = this.canvas.parentElement;
       const canvasWidth = wrapper.clientWidth;
       const margin = 150; // Edge margin
 
@@ -245,8 +231,8 @@
 
         // 50% probability to transform into UI icon
         const willTransform = Math.random() > 0.5;
-        let texture: THREE.CanvasTexture;
-        let targetType: UIComponentType | undefined;
+        let texture;
+        let targetType;
 
         // Initially all are JSON symbols
         const char = JSON_CHARS[Math.floor(Math.random() * JSON_CHARS.length)];
@@ -291,9 +277,9 @@
       }
     }
 
-    updateParticle(particle: Particle) {
+    updateParticle(particle) {
       const pos = particle.mesh.position;
-      const wrapper = this.canvas.parentElement!;
+      const wrapper = this.canvas.parentElement;
       const canvasWidth = wrapper.clientWidth;
       const margin = 150; // Edge margin
       const edgeFadeDistance = 100; // Edge fade in/out distance
@@ -402,14 +388,12 @@
     }
 
     // Cache UI textures (by type and color)
-    private uiTextureCache: Map<string, THREE.CanvasTexture> = new Map();
-    
-    getUITexture(type: UIComponentType, color: string): THREE.CanvasTexture {
+    getUITexture(type, color) {
       const key = `${type}-${color}`;
       if (!this.uiTextureCache.has(key)) {
         this.uiTextureCache.set(key, this.createUIIconTexture(type, color));
       }
-      return this.uiTextureCache.get(key)!;
+      return this.uiTextureCache.get(key);
     }
 
     animate = () => {
@@ -421,7 +405,7 @@
     };
 
     onResize() {
-      const wrapper = this.canvas.parentElement!;
+      const wrapper = this.canvas.parentElement;
       const aspect = wrapper.clientWidth / wrapper.clientHeight;
       this.camera.aspect = aspect;
       this.camera.updateProjectionMatrix();
@@ -429,8 +413,9 @@
     }
   }
 
-  const canvas = document.getElementById('json-to-ui-canvas') as HTMLCanvasElement;
-  if (canvas) {
-    new JsonToUIAnimation(canvas);
-  }
+    const canvas = document.getElementById('json-to-ui-canvas');
+    if (canvas) {
+      new JsonToUIAnimation(canvas);
+    }
+  }).catch(console.error);
 </script>

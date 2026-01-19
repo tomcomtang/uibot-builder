@@ -73,7 +73,28 @@ export function useCustomChat(): UseCustomChatReturn {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to read error message from response body
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+          if (errorData.details?.suggestion) {
+            errorMessage += `\n\n${errorData.details.suggestion}`;
+          }
+        } catch (e) {
+          // If response is not JSON, try to read as text
+          try {
+            const errorText = await response.text();
+            if (errorText) {
+              errorMessage = errorText;
+            }
+          } catch (textError) {
+            // Keep default error message
+          }
+        }
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        throw error;
       }
 
       if (!response.body) {
@@ -84,7 +105,6 @@ export function useCustomChat(): UseCustomChatReturn {
       const decoder = new TextDecoder();
       let buffer = '';
       let accumulatedText = '';
-      let hasReceivedFinalText = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -124,10 +144,6 @@ export function useCustomChat(): UseCustomChatReturn {
               // Even if text is empty, it indicates stream has ended
               if (data.text) {
                 accumulatedText = data.text;
-                hasReceivedFinalText = true;
-              } else {
-                // Empty text indicates stream ended
-                hasReceivedFinalText = true;
               }
               setMessages(prev => prev.map(msg => 
                 msg.id === assistantMessageId

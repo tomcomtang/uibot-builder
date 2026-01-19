@@ -1,0 +1,22 @@
+{
+  "conf": {
+    "headers": [],
+    "redirects": [],
+    "has404": false,
+    "ssr404": true
+  },
+  "frameworkRoutes": [
+    {
+      "regexPath": "^/_image/?$"
+    },
+    {
+      "regexPath": "^/api/chat/?$"
+    },
+    {
+      "regexPath": "^/chat/?$"
+    },
+    {
+      "regexPath": "^/$"
+    }
+  ]
+}

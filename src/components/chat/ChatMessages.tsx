@@ -11,7 +11,6 @@ interface ChatMessagesProps {
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMessage }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const sendMessageRef = useRef<((message: { text: string }) => Promise<void>) | null>(null);
 
 
   // Auto scroll to bottom

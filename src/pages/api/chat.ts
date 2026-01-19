@@ -5,21 +5,13 @@
  */
 
 import type { APIRoute } from 'astro';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { convertToModelMessages, type UIMessage } from 'ai';
 import { GoogleGenAI, Type } from '@google/genai';
+import a2uiSchema from '../../lib/a2ui-schema.json';
 
 // Load A2UI Schema (already wrapped as array in the JSON file, like A2UI)
 const getA2UISchema = () => {
-  try {
-    const schemaPath = join(process.cwd(), 'src/lib/a2ui-schema.json');
-    const schemaContent = readFileSync(schemaPath, 'utf-8');
-    return JSON.parse(schemaContent);
-  } catch (error) {
-    console.error('Failed to load A2UI schema:', error);
-    throw new Error('A2UI schema not found');
-  }
+  return a2uiSchema;
 };
 
 // Create A2UI system prompt (exactly like A2UI)
@@ -185,7 +177,7 @@ const isA2UIJSON = (content: string): boolean => {
 };
 
 // Validate A2UI JSON (similar to A2UI source code)
-const validateA2UIJSON = (jsonStr: string, schema: any): any[] => {
+const validateA2UIJSON = (jsonStr: string, _schema: any): any[] => {
   try {
     let parsed: any;
     try {
@@ -229,7 +221,38 @@ const validateA2UIJSON = (jsonStr: string, schema: any): any[] => {
   }
 };
 
+// CORS headers helper
+const getCORSHeaders = (origin?: string | null) => {
+  const allowedOrigins = [
+    'https://uibot-builder.edgeone.cool',
+    'http://localhost:4321',
+    'http://localhost:3000',
+  ];
+  
+  const requestOrigin = origin || '';
+  const allowOrigin = allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
+  
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
+};
+
+// Handle OPTIONS preflight request
+export const OPTIONS: APIRoute = async ({ request }) => {
+  const origin = request.headers.get('Origin');
+  return new Response(null, {
+    status: 204,
+    headers: getCORSHeaders(origin),
+  });
+};
+
 export const POST: APIRoute = async ({ request }) => {
+  const origin = request.headers.get('Origin');
+  const corsHeaders = getCORSHeaders(origin);
+  
   try {
     const { messages }: { messages: UIMessage[] } = await request.json();
 
@@ -245,12 +268,22 @@ export const POST: APIRoute = async ({ request }) => {
     
     const isUI = isUIRequest(lastMessageText);
 
+    // Try multiple ways to get API key (support different deployment environments)
     const apiKey = process.env.GEMINI_API_KEY 
       || process.env.Gemini_Api_Key
+      || process.env.GEMINI_API_KEY_ENV  // EdgeOne Pages environment variable format
       || import.meta.env.GEMINI_API_KEY 
-      || import.meta.env.Gemini_Api_Key;
+      || import.meta.env.Gemini_Api_Key
+      || import.meta.env.PUBLIC_GEMINI_API_KEY; // Public env var (if needed)
+    
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY not found. Please set GEMINI_API_KEY or Gemini_Api_Key in .env.local');
+      console.error('❌ GEMINI_API_KEY not found. Available env vars:', {
+        'process.env.GEMINI_API_KEY': !!process.env.GEMINI_API_KEY,
+        'process.env.Gemini_Api_Key': !!process.env.Gemini_Api_Key,
+        'import.meta.env.GEMINI_API_KEY': !!import.meta.env.GEMINI_API_KEY,
+        'import.meta.env.Gemini_Api_Key': !!import.meta.env.Gemini_Api_Key,
+      });
+      throw new Error('GEMINI_API_KEY not found. Please set GEMINI_API_KEY in your deployment environment variables.');
     }
 
     // Initialize Google GenAI
@@ -385,6 +418,7 @@ export const POST: APIRoute = async ({ request }) => {
             {
               headers: {
                 'Content-Type': 'text/plain; charset=utf-8',
+                ...corsHeaders,
               },
             }
           );
@@ -402,6 +436,7 @@ export const POST: APIRoute = async ({ request }) => {
         {
           headers: {
             'Content-Type': 'text/plain; charset=utf-8',
+            ...corsHeaders,
           },
         }
       );
@@ -468,6 +503,7 @@ export const POST: APIRoute = async ({ request }) => {
         {
           headers: {
             'Content-Type': 'text/plain; charset=utf-8',
+            ...corsHeaders,
           },
         }
       );
@@ -475,12 +511,22 @@ export const POST: APIRoute = async ({ request }) => {
 
         } catch (error: any) {
           console.error('❌ Chat API error:', error);
-          console.error('❌ Error details:', JSON.stringify(error, null, 2));
+          console.error('❌ Error stack:', error?.stack);
+          console.error('❌ Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
 
-          // Extract detailed error from Google GenAI
+          // Extract detailed error from Google GenAI or other sources
           const apiError = error?.error || error?.response?.error || error;
-          const apiErrorMessage = apiError?.message || error?.message || String(error);
+          let apiErrorMessage = apiError?.message || error?.message || String(error);
           const apiErrorCode = apiError?.code || error?.status || error?.statusCode || 500;
+          
+          // Add more context for common errors
+          if (apiErrorMessage.includes('GEMINI_API_KEY')) {
+            apiErrorMessage = 'GEMINI_API_KEY not configured. Please set GEMINI_API_KEY in your EdgeOne Pages environment variables.';
+          } else if (apiErrorMessage.includes('schema')) {
+            apiErrorMessage = `Schema loading error: ${apiErrorMessage}. Please ensure a2ui-schema.json exists in src/lib/`;
+          } else if (apiErrorMessage.includes('ENOENT')) {
+            apiErrorMessage = `File not found: ${apiErrorMessage}. This might be a deployment issue.`;
+          }
 
           // Determine status code based on error code
           let statusCode = 500;
@@ -490,9 +536,11 @@ export const POST: APIRoute = async ({ request }) => {
             statusCode = 400;
           } else if (apiErrorCode === 429) {
             statusCode = 429;
+          } else if (apiErrorCode === 503 || apiErrorCode === 'UNAVAILABLE') {
+            statusCode = 503;
           }
 
-          // Extract retry delay for quota errors
+          // Extract retry delay for quota errors and service unavailable errors
           let retryDelay: number | undefined;
           let quotaInfo: string | undefined;
           if (apiErrorCode === 429 || apiErrorMessage?.includes('quota') || apiErrorMessage?.includes('Quota exceeded')) {
@@ -507,6 +555,12 @@ export const POST: APIRoute = async ({ request }) => {
             if (quotaFailure?.violations?.[0]) {
               const violation = quotaFailure.violations[0];
               quotaInfo = `Limit: ${violation.quotaValue || 'unknown'}, Metric: ${violation.quotaMetric || 'unknown'}`;
+            }
+          } else if (apiErrorCode === 503 || apiErrorMessage?.includes('overloaded') || apiErrorMessage?.includes('UNAVAILABLE')) {
+            // Extract retry delay for service unavailable errors
+            const retryInfo = apiError?.details?.find((d: any) => d['@type']?.includes('RetryInfo'));
+            if (retryInfo?.retryDelay) {
+              retryDelay = parseInt(retryInfo.retryDelay) || undefined;
             }
           }
 
@@ -524,13 +578,18 @@ export const POST: APIRoute = async ({ request }) => {
                 ? 'Please check your GEMINI_API_KEY at https://aistudio.google.com/'
                 : (apiErrorCode === 429 || apiErrorMessage?.includes('quota'))
                 ? `Quota exceeded. ${quotaInfo ? `(${quotaInfo})` : ''} ${retryDelay ? `Please retry in ${Math.ceil(retryDelay)} seconds.` : 'Please wait and try again later.'} Free tier limit: 20 requests per day. Upgrade at https://ai.google.dev/pricing`
+                : (apiErrorCode === 503 || apiErrorMessage?.includes('overloaded') || apiErrorMessage?.includes('UNAVAILABLE'))
+                ? `Service temporarily unavailable. The AI model is currently overloaded. ${retryDelay ? `Please retry in ${Math.ceil(retryDelay)} seconds.` : 'Please wait a moment and try again.'}`
                 : undefined,
               retryDelay: retryDelay,
               quotaInfo: quotaInfo
             }
           }), {
             status: statusCode,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...corsHeaders,
+            },
           });
         }
 };

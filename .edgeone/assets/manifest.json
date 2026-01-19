@@ -1,0 +1,25 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Evervault",
+  "legalName": "Evervault Inc.",
+  "url": "https://evervault.com",
+  "logo": {
+    "@context": "http://schema.org",
+    "@type": "ImageObject",
+    "width": "512",
+    "height": "512",
+    "url": "https://evervault.com/logo.png"
+  },
+  "sameAs": [
+    "https://www.linkedin.com/company/evervault/",
+    "https://twitter.com/evervault/",
+    "https://github.com/evervault/",
+    "https://angel.co/company/evervault"
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Dublin",
+    "addressCountry": "IE"
+  }
+}
