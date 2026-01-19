@@ -24,7 +24,7 @@ npm install
 在项目根目录创建 `.env` 文件：
 
 ```env
-GOOGLE_GENERATIVE_AI_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 ### 3. 启动开发服务器
