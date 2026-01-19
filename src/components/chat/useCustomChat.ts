@@ -155,10 +155,10 @@ export function useCustomChat(): UseCustomChatReturn {
     } catch (error: any) {
       if (error.name === 'AbortError') {
         console.log('Request aborted');
+        setStatus('ready'); // Reset to ready state after abort
         return;
       }
       console.error('❌ Chat error:', error);
-      setStatus('error');
       
       // 更新错误消息
       setMessages(prev => prev.map(msg => 
@@ -170,6 +170,9 @@ export function useCustomChat(): UseCustomChatReturn {
             }
           : msg
       ));
+      
+      // Reset status to 'ready' after error so user can continue typing
+      setStatus('ready');
     } finally {
       abortControllerRef.current = null;
     }
