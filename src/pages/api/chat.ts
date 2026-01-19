@@ -112,7 +112,22 @@ const isUIRequest = (messageText: string): boolean => {
     return true;
   }
   
-  // Check if message contains A2UI Action (button click) - this should trigger UI response
+  // Check if message is a pure A2UI Action JSON (client_to_server.json format)
+  // Format: { "action": { "name": "...", "surfaceId": "...", "sourceComponentId": "...", "timestamp": "...", "context": {...} } }
+  if (messageText.trim().startsWith('{') && messageText.includes('"action"')) {
+    try {
+      const parsed = JSON.parse(messageText.trim());
+      if (parsed.action && parsed.action.name && parsed.action.surfaceId && parsed.action.sourceComponentId) {
+        console.log('✅ Detected A2UI Action JSON (pure format), treating as UI request');
+        console.log('📋 Action details:', JSON.stringify(parsed, null, 2));
+        return true;
+      }
+    } catch (e) {
+      // Not valid JSON, continue checking
+    }
+  }
+  
+  // Also check for legacy format with "A2UI Action:" prefix (backward compatibility)
   if (messageText.includes('A2UI Action:') || messageText.includes('"action"')) {
     try {
       // Try to extract and parse A2UI Action JSON
@@ -120,14 +135,13 @@ const isUIRequest = (messageText: string): boolean => {
       if (actionMatch) {
         const actionJson = JSON.parse(actionMatch[1]);
         if (actionJson.action && actionJson.action.name) {
-          console.log('✅ Detected A2UI Action in message, treating as UI request');
+          console.log('✅ Detected A2UI Action in message (legacy format), treating as UI request');
           console.log('📋 Action details:', JSON.stringify(actionJson, null, 2));
           return true;
         }
       }
     } catch (e) {
-      // If parsing fails, still check for action keyword
-      console.log('⚠️ Failed to parse A2UI Action, but action keyword found');
+      // If parsing fails, continue checking
     }
   }
   
@@ -310,15 +324,28 @@ export const POST: APIRoute = async ({ request }) => {
           userContent = textPart?.text || '';
         }
         
-        // Extract and log A2UI Action if present
-        if (userContent && userContent.includes('A2UI Action:')) {
+        // Extract and log A2UI Action if present (pure JSON format or legacy format)
+        if (userContent) {
           try {
-            const actionMatch = userContent.match(/A2UI Action:\s*(\{[\s\S]*\})/);
-            if (actionMatch) {
-              const a2uiAction = JSON.parse(actionMatch[1]);
-              console.log('🎯 A2UI Action extracted from user message:', JSON.stringify(a2uiAction, null, 2));
-              console.log('📋 Action name:', a2uiAction.action?.name);
-              console.log('📋 Action context:', JSON.stringify(a2uiAction.action?.context, null, 2));
+            // Try pure JSON format first (A2UI v0.9 standard)
+            if (userContent.trim().startsWith('{') && userContent.includes('"action"')) {
+              const a2uiAction = JSON.parse(userContent.trim());
+              if (a2uiAction.action && a2uiAction.action.name) {
+                console.log('🎯 A2UI Action extracted from user message (pure JSON format):', JSON.stringify(a2uiAction, null, 2));
+                console.log('📋 Action name:', a2uiAction.action.name);
+                console.log('📋 Action surfaceId:', a2uiAction.action.surfaceId);
+                console.log('📋 Action context:', JSON.stringify(a2uiAction.action.context, null, 2));
+              }
+            }
+            // Try legacy format with "A2UI Action:" prefix
+            else if (userContent.includes('A2UI Action:')) {
+              const actionMatch = userContent.match(/A2UI Action:\s*(\{[\s\S]*\})/);
+              if (actionMatch) {
+                const a2uiAction = JSON.parse(actionMatch[1]);
+                console.log('🎯 A2UI Action extracted from user message (legacy format):', JSON.stringify(a2uiAction, null, 2));
+                console.log('📋 Action name:', a2uiAction.action?.name);
+                console.log('📋 Action context:', JSON.stringify(a2uiAction.action?.context, null, 2));
+              }
             }
           } catch (e) {
             console.warn('⚠️ Failed to parse A2UI Action from message:', e);

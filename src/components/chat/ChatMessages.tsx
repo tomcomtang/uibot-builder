@@ -336,41 +336,17 @@ const MessageContent: React.FC<{
     }
 
     // A2UI v0.9 standard format: { action: { name, surfaceId, sourceComponentId, timestamp, context } }
-    // For chat integration, we convert this to a user-friendly text message that includes the action context
-    const action = a2uiActionMessage.action;
-    if (!action) {
+    // Send the action in pure A2UI JSON format (client_to_server.json standard)
+    if (!a2uiActionMessage.action) {
       console.warn('⚠️ Invalid A2UI action message format');
       return;
     }
 
-    const { name, context } = action;
+    // Send the A2UI action message as pure JSON string (A2UI v0.9 standard)
+    // This matches the client_to_server.json format exactly
+    const messageText = JSON.stringify(a2uiActionMessage);
 
-    // Build a natural language message from the action
-    // This allows the AI to understand the user's intent while preserving the structured action data
-    let messageText = '';
-
-    if (name === 'navigate' || name === 'viewDetails' || name === 'learnMore') {
-      // For navigation actions, extract item information from context
-      const itemTitle = context?.title || context?.name || context?.website || context?.id || 'this item';
-      const itemDescription = context?.description || context?.details || '';
-
-      if (name === 'navigate') {
-        messageText = `Show me more details about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
-      } else if (name === 'viewDetails') {
-        messageText = `Show detailed information about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
-      } else {
-        messageText = `Tell me more about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
-      }
-    } else {
-      // For other actions, describe the action
-      messageText = `Execute action: ${name}`;
-    }
-
-    // Append the full A2UI action JSON for AI context (A2UI standard format)
-    // This ensures the AI has access to the complete structured action data
-    messageText += `\n\nA2UI Action: ${JSON.stringify(a2uiActionMessage, null, 2)}`;
-
-    console.log('📤 Sending A2UI action to AI:', messageText);
+    console.log('📤 Sending A2UI action to AI (pure JSON format):', messageText);
     console.log('📤 A2UI standard format:', JSON.stringify(a2uiActionMessage, null, 2));
 
     onSendMessage({ text: messageText }).catch(error => {
