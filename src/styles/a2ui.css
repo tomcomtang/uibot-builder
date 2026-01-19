@@ -1,9 +1,9 @@
 /**
- * A2UI 组件样式 - 与 Chat UI 风格统一
- * 玻璃拟态效果 + 紫色调 + 暗色背景
+ * UI Component Styles - Unified with Chat UI style
+ * Glassmorphism effect + Purple theme + Dark background
  */
 
-/* Surface 容器 */
+/* Surface container */
 .a2ui-surface {
   width: 100%;
   animation: surfaceFadeIn 0.3s ease;
@@ -20,7 +20,7 @@
   }
 }
 
-/* ============= 基础组件 ============= */
+/* ============= Basic Components ============= */
 
 /* Text */
 .a2ui-text {
@@ -105,7 +105,7 @@
   margin: 0 8px;
 }
 
-/* ============= 布局组件 ============= */
+/* ============= Layout Components ============= */
 
 /* Row */
 .a2ui-row {
@@ -114,27 +114,27 @@
   flex-wrap: wrap;
   gap: 16px;
   align-items: flex-start;
-  width: 100%; /* 确保Row占满宽度 */
+  width: 100%; /* Ensure Row takes full width */
 }
 
-/* Row中的Card等宽分配 - 智能平均分配空间 */
+/* Equal width distribution for Cards in Row - smart space allocation */
 .a2ui-row > .a2ui-card {
-  flex: 1 1 0; /* 强制等分 */
-  min-width: 0; /* 允许收缩 */
-  width: calc((100% - 32px) / 3); /* 手动计算宽度：总宽度减去2个gap(16px*2)再除以3 */
-  box-sizing: border-box; /* 确保padding不影响宽度计算 */
+  flex: 1 1 0; /* Force equal distribution */
+  min-width: 0; /* Allow shrinking */
+  width: calc((100% - 32px) / 3); /* Manual width calculation: total width minus 2 gaps (16px*2) divided by 3 */
+  box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
 }
 
-/* Row中的Column等宽分配 - 用于统计数据等场景 */
+/* Equal width distribution for Columns in Row - for statistics and similar scenarios */
 .a2ui-row > .a2ui-column {
-  flex: 1 1 0; /* 强制等分 */
-  min-width: 0; /* 允许收缩 */
-  text-align: center; /* 统计数据居中显示 */
+  flex: 1 1 0; /* Force equal distribution */
+  min-width: 0; /* Allow shrinking */
+  text-align: center; /* Center statistics display */
 }
 
-/* Row中的Button应该保持自动宽度，不铺满 */
+/* Buttons in Row should maintain auto width, not stretch */
 .a2ui-row > .a2ui-button {
-  flex: 0 0 auto; /* 不拉伸，保持内容宽度 */
+  flex: 0 0 auto; /* Don't stretch, maintain content width */
   width: auto !important;
 }
 
@@ -206,7 +206,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* 完全移除滚动功能，让内容自然展开 */
+  /* Completely remove scroll functionality, let content expand naturally */
 }
 
 /* Card */
@@ -265,7 +265,7 @@
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
 }
 
-/* ============= 交互组件 ============= */
+/* ============= Interactive Components ============= */
 
 /* Button */
 .a2ui-button {
@@ -391,24 +391,24 @@ textarea.a2ui-textfield-input {
   max-height: 200px;
 }
 
-/* Row中的TextField布局优化 */
+/* TextField layout optimization in Row */
 .a2ui-row .a2ui-textfield-container {
   flex: 1 1 0 !important;
-  min-width: 0 !important; /* 允许收缩 */
-  width: auto !important; /* 覆盖默认的width: 100% */
+  min-width: 0 !important; /* Allow shrinking */
+  width: auto !important; /* Override default width: 100% */
 }
 
-/* 确保Row中的TextField之间有适当间距 */
+/* Ensure proper spacing between TextFields in Row */
 .a2ui-row .a2ui-textfield-container + .a2ui-textfield-container {
   margin-left: 16px;
 }
 
-/* 表单中Row之间的间距 */
+/* Spacing between Rows in forms */
 .a2ui-card .a2ui-row + .a2ui-row {
   margin-top: 20px;
 }
 
-/* 表单中Row和其他元素之间的间距 */
+/* Spacing between Rows and other elements in forms */
 .a2ui-card .a2ui-row + .a2ui-textfield-container,
 .a2ui-card .a2ui-row + .a2ui-checkbox-container {
   margin-top: 20px;
@@ -504,7 +504,7 @@ textarea.a2ui-textfield-input {
   font-variant-numeric: tabular-nums;
 }
 
-/* ============= 新增组件 ============= */
+/* ============= Additional Components ============= */
 
 /* Chart */
 .a2ui-chart-container {
@@ -1139,26 +1139,26 @@ textarea.a2ui-textfield-input {
 
 
 
-/* ============= A2UI 消息容器样式 ============= */
+/* ============= Message Container Styles ============= */
 
 .a2ui-message-content {
-  /* 去掉 padding，让内容和 avatar 顶部对齐 */
+  /* Remove padding to align content with avatar at top */
   padding: 0 !important;
 }
 
-/* 确保 A2UI 组件在消息容器内正确显示 */
+/* Ensure UI components display correctly within message container */
 .a2ui-message-content .a2ui-surface {
   margin: 0;
   width: 100%;
 }
 
-/* 确保Column和Row组件充分利用宽度 */
+/* Ensure Column and Row components utilize full width */
 .a2ui-message-content .a2ui-column,
 .a2ui-message-content .a2ui-row {
   width: 100%;
 }
 
-/* ============= 响应式 ============= */
+/* ============= Responsive Design ============= */
 
 @media (max-width: 768px) {
   .a2ui-card {
@@ -1184,7 +1184,7 @@ textarea.a2ui-textfield-input {
     gap: 12px;
   }
 
-  /* 平板端：2个卡片一行 */
+  /* Tablet: 2 cards per row */
   .a2ui-row > .a2ui-card {
     flex: 1 1 calc(50% - 8px);
     min-width: calc(50% - 8px);
@@ -1199,7 +1199,7 @@ textarea.a2ui-textfield-input {
     font-size: 0.875rem;
   }
 
-  /* 移动端表单布局：Row中的TextField垂直排列 */
+  /* Mobile form layout: TextFields in Row arranged vertically */
   .a2ui-row .a2ui-textfield-container {
     flex: 1 1 100%;
     margin-left: 0 !important;
@@ -1209,7 +1209,7 @@ textarea.a2ui-textfield-input {
     margin-top: 16px;
   }
 
-  /* 移动端：表单Row改为垂直布局 */
+  /* Mobile: Form Rows changed to vertical layout */
   .a2ui-card .a2ui-row {
     flex-direction: column;
   }
@@ -1230,7 +1230,7 @@ textarea.a2ui-textfield-input {
     font-size: 0.8125rem;
   }
 
-  /* 小屏幕：单列显示 */
+  /* Small screens: single column display */
   .a2ui-row > .a2ui-card {
     flex: 1 1 100%;
     min-width: 100%;

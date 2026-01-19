@@ -6,25 +6,25 @@ import ChatInput from './ChatInput';
 const ChatPage: React.FC = () => {
   const { messages, sendMessage, status } = useCustomChat();
 
-  // 处理发送消息
+  // Handle sending messages
   const handleSendMessage = async (messageText: string) => {
-    // 发送给AI处理
+    // Send to AI for processing
     await sendMessage({ text: messageText });
   };
 
   return (
     <main className="chat-section">
-      {/* 固定的卡片背景 - 独立层 */}
+      {/* Fixed card background - separate layer */}
       <div className="chat-background"></div>
       
-      {/* 聊天内容区域 - 独立层 */}
+      {/* Chat content area - separate layer */}
       <ChatMessages 
         messages={messages} 
         status={status}
         onSendMessage={sendMessage}
       />
       
-      {/* 固定的输入框 - 独立层 */}
+      {/* Fixed input field - separate layer */}
       <ChatInput 
         onSendMessage={handleSendMessage}
         disabled={status !== 'ready'}

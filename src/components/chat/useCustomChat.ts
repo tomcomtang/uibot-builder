@@ -1,6 +1,6 @@
 /**
- * 自定义 Chat Hook - 替代 useChat，适配直接调用 DeepSeek API 的格式
- * 保持与 useChat 相同的接口，但内部使用 fetch 处理流式响应
+ * Custom Chat Hook - Replaces useChat, adapts to direct API call format
+ * Maintains the same interface as useChat, but uses fetch internally for streaming responses
  */
 
 import { useState, useCallback, useRef } from 'react';
@@ -29,7 +29,7 @@ export function useCustomChat(): UseCustomChatReturn {
   const sendMessage = useCallback(async (message: { text: string }) => {
     if (!message.text.trim()) return;
 
-    // 添加用户消息
+    // Add user message
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -40,7 +40,7 @@ export function useCustomChat(): UseCustomChatReturn {
     setMessages(prev => [...prev, userMessage]);
     setStatus('submitted');
 
-    // 创建 assistant 消息占位符
+    // Create assistant message placeholder
     const assistantMessageId = `assistant-${Date.now()}`;
     const assistantMessage: ChatMessage = {
       id: assistantMessageId,
@@ -52,7 +52,7 @@ export function useCustomChat(): UseCustomChatReturn {
     setMessages(prev => [...prev, assistantMessage]);
     setStatus('streaming');
 
-    // 创建 AbortController
+    // Create AbortController
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
@@ -89,7 +89,6 @@ export function useCustomChat(): UseCustomChatReturn {
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
-          console.log('📥 Stream finished, final accumulated text length:', accumulatedText.length);
           break;
         }
 
@@ -100,8 +99,8 @@ export function useCustomChat(): UseCustomChatReturn {
         for (const line of lines) {
           if (!line.trim()) continue;
 
-          // 解析 AI SDK 格式的流式数据
-          // 格式: "0:{"type":"text-delta","textDelta":"..."}" 或 "0:{"type":"text","text":"..."}"
+          // Parse AI SDK format streaming data
+          // Format: "0:{"type":"text-delta","textDelta":"..."}" or "0:{"type":"text","text":"..."}"
           const colonIndex = line.indexOf(':');
           if (colonIndex === -1) continue;
 
@@ -110,7 +109,7 @@ export function useCustomChat(): UseCustomChatReturn {
             
             if (data.type === 'text-delta' && data.textDelta) {
               accumulatedText += data.textDelta;
-              // 更新消息内容
+              // Update message content
               setMessages(prev => prev.map(msg => 
                 msg.id === assistantMessageId
                   ? {
@@ -121,15 +120,13 @@ export function useCustomChat(): UseCustomChatReturn {
                   : msg
               ));
             } else if (data.type === 'text') {
-              // 完整文本（通常是 A2UI JSON）- 这会替换之前的所有增量内容
-              // 即使 text 为空，也表示流结束了
+              // Complete text (usually UI JSON) - replaces all previous incremental content
+              // Even if text is empty, it indicates stream has ended
               if (data.text) {
                 accumulatedText = data.text;
                 hasReceivedFinalText = true;
-                console.log('✅ Received final text (A2UI JSON):', accumulatedText.substring(0, 200));
               } else {
-                // 空文本表示流结束
-                console.log('✅ Received empty text, stream ended');
+                // Empty text indicates stream ended
                 hasReceivedFinalText = true;
               }
               setMessages(prev => prev.map(msg => 
@@ -143,24 +140,22 @@ export function useCustomChat(): UseCustomChatReturn {
               ));
             }
           } catch (e) {
-            // 忽略解析错误
+            // Ignore parsing errors
             console.warn('⚠️ Failed to parse stream chunk:', e, 'Line:', line.substring(0, 100));
           }
         }
       }
 
-      // 确保状态更新为 ready
-      console.log('✅ Stream processing complete, setting status to ready');
+      // Ensure status is updated to ready
       setStatus('ready');
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        console.log('Request aborted');
         setStatus('ready'); // Reset to ready state after abort
         return;
       }
       console.error('❌ Chat error:', error);
       
-      // 更新错误消息
+      // Update error message
       setMessages(prev => prev.map(msg => 
         msg.id === assistantMessageId
           ? {
@@ -181,7 +176,7 @@ export function useCustomChat(): UseCustomChatReturn {
   return {
     messages: messages.map(msg => ({
       ...msg,
-      // 确保兼容 UIMessage 格式
+      // Ensure compatibility with UIMessage format
       parts: msg.parts || [{ type: 'text', text: msg.content }]
     })) as any,
     status,

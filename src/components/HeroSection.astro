@@ -1,7 +1,7 @@
 ---
 /**
- * Hero Section 组件 - 首屏主视觉区域
- * 包含标题、副标题、描述文本和 CTA 按钮
+ * Hero Section Component - Main visual area on first screen
+ * Contains title, subtitle, description text and CTA button
  */
 import JsonToUICanvas from './JsonToUICanvas.astro';
 ---
@@ -9,15 +9,15 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
 <header class="hero-section">
   <div class="gradient-background" data-id="gradient">
     <div class="hero-content" data-id="content">
-      <!-- 粒子流动特效区域 -->
+      <!-- Particle flow effect area -->
       <div class="canvas-wrapper">
         <JsonToUICanvas />
-        <!-- Mask 遮罩层：基准线左侧透明，右侧可见内容 -->
+        <!-- Mask layer: transparent on left side of baseline, visible content on right -->
         <div class="particle-mask" data-position="right">
           <div class="particle-scroller" style="--gap: 300;">
-            <!-- 解密状态卡片容器 -->
+            <!-- Decrypted state card container -->
             <div class="card-decrypted">
-              <!-- 紫色信用卡 -->
+              <!-- Purple credit card -->
               <div class="payment-card" data-variant="purple">
                 <!-- Visa Logo -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
@@ -44,7 +44,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
                 </div>
               </div>
 
-              <!-- 蓝色信用卡 -->
+              <!-- Blue credit card -->
               <div class="payment-card" data-variant="blue">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
                   <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
@@ -66,7 +66,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
                 </div>
               </div>
 
-              <!-- 粉色信用卡 -->
+              <!-- Pink credit card -->
               <div class="payment-card" data-variant="pink">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
                   <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
@@ -89,9 +89,9 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
               </div>
             </div>
             
-            <!-- 解密状态卡片容器 - 第二组（复制用于无缝循环） -->
+            <!-- Decrypted state card container - second group (duplicated for seamless loop) -->
             <div class="card-decrypted" aria-hidden="true">
-              <!-- 紫色信用卡 -->
+              <!-- Purple credit card -->
               <div class="payment-card" data-variant="purple">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
                   <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
@@ -113,7 +113,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
                 </div>
               </div>
 
-              <!-- 蓝色信用卡 -->
+              <!-- Blue credit card -->
               <div class="payment-card" data-variant="blue">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
                   <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
@@ -135,7 +135,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
                 </div>
               </div>
 
-              <!-- 粉色信用卡 -->
+              <!-- Pink credit card -->
               <div class="payment-card" data-variant="pink">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
                   <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
@@ -161,7 +161,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
         </div>
       </div>
       
-      <!-- 标题文案区域 -->
+      <!-- Title text area -->
       <div class="hero-text">
         <h1 class="hero-title">AI-Powered Interactive UI</h1>
         <h2 class="hero-subtitle">Transform AI responses into intuitive interfaces</h2>
@@ -179,27 +179,27 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
 </header>
 
 <script>
-  // Get Started 按钮交互
+  // Get Started button interaction
   const getStartedBtn = document.getElementById('getStartedBtn');
   
   if (getStartedBtn) {
     getStartedBtn.addEventListener('click', (e) => {
       e.preventDefault();
       
-      // 添加点击动画效果
+      // Add click animation effect
       getStartedBtn.style.transform = 'scale(0.98)';
       getStartedBtn.style.transition = 'transform 0.1s ease';
       
       setTimeout(() => {
         getStartedBtn.style.transform = '';
         
-        // 跳转到 AI 对话页面
+        // Navigate to AI chat page
         window.location.href = '/chat';
       }, 100);
     });
     
-    // CSS hover 效果已经足够，不需要额外的 JS hover 处理
-    // 如果需要增强效果，可以在这里添加
+    // CSS hover effects are sufficient, no additional JS hover handling needed
+    // If enhanced effects are needed, can be added here
   }
 </script>
 
@@ -211,22 +211,22 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 1rem; /* 底部小间隙 */
+    padding-bottom: 1rem; /* Small bottom gap */
     overflow: hidden;
   }
 
   .gradient-background {
     position: relative;
     width: calc(100% - 1.5rem);
-    height: 90vh; /* 进一步增加高度 */
-    display: flex; /* 改为 flex */
-    align-items: center; /* 垂直居中 */
-    justify-content: center; /* 水平居中 */
+    height: 90vh; /* Further increase height */
+    display: flex; /* Change to flex */
+    align-items: center; /* Vertical center */
+    justify-content: center; /* Horizontal center */
     padding: 0 2rem;
     margin: 0 0.75rem;
     
-    /* 圆角渐变背景卡片 - 关键样式！ */
-    border-radius: 48px; /* 四周圆角 */
+    /* Rounded gradient background card - key style! */
+    border-radius: 48px; /* Rounded corners on all sides */
     background: radial-gradient(140% 107.13% at 50% 10%, transparent 37.41%, #6633ee 69.27%, #ffffff 100%);
     overflow: hidden;
   }
@@ -234,17 +234,17 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
   .hero-content {
     position: relative;
     z-index: 1;
-    width: 100%; /* 和 gradient-background 一样宽 */
-    height: 100%; /* 铺满高度 */
+    width: 100%; /* Same width as gradient-background */
+    height: 100%; /* Fill height */
     padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* 垂直居中 */
+    justify-content: center; /* Vertical center */
   }
 
   .canvas-wrapper {
-    position: absolute; /* 改为绝对定位 */
+    position: absolute; /* Change to absolute positioning */
     top: 0;
     left: 0;
     right: 0;
@@ -308,7 +308,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
     padding: 0 60px;
   }
 
-  /* 支付卡片样式 */
+  /* Payment card styles */
   .payment-card {
     position: relative;
     width: 340px;
@@ -324,17 +324,17 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
     flex-shrink: 0;
   }
 
-  /* 紫色卡片 */
+  /* Purple card */
   .payment-card[data-variant="purple"] {
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(99, 102, 241, 0.9) 100%);
   }
 
-  /* 蓝色卡片 */
+  /* Blue card */
   .payment-card[data-variant="blue"] {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%);
   }
 
-  /* 粉色卡片 */
+  /* Pink card */
   .payment-card[data-variant="pink"] {
     background: linear-gradient(135deg, rgba(236, 72, 153, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%);
   }
@@ -404,7 +404,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
     margin-top: auto;
   }
 
-  /* 卡号 */
+  /* Card number */
   .card-number {
     display: flex;
     gap: 16px;
@@ -427,7 +427,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
     align-items: center;
     gap: 1.5rem;
     pointer-events: all;
-    max-width: 800px; /* 限制文案宽度 */
+    max-width: 800px; /* Limit text width */
   }
 
   .hero-title {
@@ -491,7 +491,7 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
-  /* 确保按钮 hover 动画不被覆盖 */
+  /* Ensure button hover animation is not overridden */
   .hero-text .cta-button {
     pointer-events: all;
   }

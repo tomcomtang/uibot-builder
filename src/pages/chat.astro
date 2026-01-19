@@ -1,7 +1,7 @@
 ---
 /**
- * AI 对话页面
- * 使用React组件重构
+ * AI Chat Page
+ * Refactored using React components
  */
 
 import EvervaultHead from '../components/EvervaultHead.astro';
@@ -16,21 +16,21 @@ import ChatPage from '../components/chat/ChatPage';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>A2UI - AI Chat</title>
   
-  <!-- EdgeOne 原始资源（只加载 CSS） -->
+  <!-- EdgeOne original resources (CSS only) -->
   <EvervaultHead />
   
-  <!-- A2UI 样式 -->
+  <!-- UI component styles -->
   <link rel="stylesheet" href="/src/styles/a2ui.css">
   
-  <!-- 聊天页面样式 -->
+  <!-- Chat page styles -->
   <link rel="stylesheet" href="/src/styles/chat.css">
 </head>
 
 <body>
-  <!-- 原始导航栏 -->
+  <!-- Original navigation bar -->
   <OriginalHeader />
 
-  <!-- AI 对话区域 - 使用React组件 -->
+  <!-- AI chat area - using React components -->
   <ChatPage client:load />
 </body>
 </html>

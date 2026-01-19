@@ -9,9 +9,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const sendingRef = useRef(false); // 防止重复发送
+  const sendingRef = useRef(false); // Prevent duplicate sends
 
-  // 自动调整 textarea 高度
+  // Auto-adjust textarea height
   const adjustHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -23,32 +23,30 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
     adjustHeight();
   }, [message]);
 
-  // 发送消息
+  // Send message
   const handleSend = () => {
     const trimmedMessage = message.trim();
     if (!trimmedMessage || disabled || sendingRef.current) {
-      console.log('Send blocked:', { trimmedMessage: !!trimmedMessage, disabled, sending: sendingRef.current });
       return;
     }
     
     sendingRef.current = true;
-    console.log('Sending message:', trimmedMessage);
     
     onSendMessage(trimmedMessage);
     setMessage('');
     
-    // 重置高度
+    // Reset height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
     
-    // 延迟重置发送状态，防止快速重复点击
+    // Delay reset sending state to prevent rapid duplicate clicks
     setTimeout(() => {
       sendingRef.current = false;
     }, 1000);
   };
 
-  // 处理键盘事件
+  // Handle keyboard events
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -56,7 +54,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
     }
   };
 
-  // 点击容器时聚焦输入框
+  // Focus input when clicking container
   const handleContainerClick = (e: React.MouseEvent) => {
     if (e.target !== e.currentTarget) return;
     textareaRef.current?.focus();

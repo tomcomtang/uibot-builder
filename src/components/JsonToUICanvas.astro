@@ -1,7 +1,7 @@
 ---
 /**
- * JsonToUICanvas 组件 - JSON 转 UI 组件动画
- * 展示 A2UI 核心概念：将 JSON 数据转换为交互式 UI 组件
+ * JsonToUICanvas Component - JSON to UI component animation
+ * Demonstrates core concept: converting JSON data to interactive UI components
  */
 ---
 
@@ -30,10 +30,10 @@
 <script>
   import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js';
 
-  // JSON 符号集
+  // JSON character set
   const JSON_CHARS = ['{', '}', '[', ']', '"', ':', ',', 'data', 'type', 'value', 'props'];
   
-  // UI 组件类型
+  // UI component types
   enum UIComponentType {
     INPUT = 'input',
     BUTTON = 'button',
@@ -42,18 +42,18 @@
     SLIDER = 'slider'
   }
 
-  // 随机颜色池（丰富多彩的颜色）
+  // Random color pool (rich and colorful)
   const COLORS = [
-    '#6432e6', // 紫色
-    '#e62e8b', // 玫红
-    '#2e86e6', // 蓝色
-    '#e6962e', // 橙色
-    '#2ee6a6', // 青色
-    '#e6e62e', // 黄色
-    '#8b2ee6', // 深紫
-    '#2ee65a', // 绿色
-    '#e62e5a', // 红色
-    '#5a2ee6', // 蓝紫
+    '#6432e6', // Purple
+    '#e62e8b', // Rose
+    '#2e86e6', // Blue
+    '#e6962e', // Orange
+    '#2ee6a6', // Cyan
+    '#e6e62e', // Yellow
+    '#8b2ee6', // Deep purple
+    '#2ee65a', // Green
+    '#e62e5a', // Red
+    '#5a2ee6', // Blue-purple
   ];
 
   interface Particle {
@@ -63,8 +63,8 @@
     phase: 'json' | 'transition' | 'ui';
     targetType?: UIComponentType;
     rotationSpeed: number;
-    color: string; // 粒子颜色
-    currentText?: string; // 当前显示的文本（用于判断宽度）
+    color: string; // Particle color
+    currentText?: string; // Currently displayed text (for width calculation)
   }
 
   class JsonToUIAnimation {
@@ -73,7 +73,7 @@
     private camera!: THREE.PerspectiveCamera;
     private renderer!: THREE.WebGLRenderer;
     private particles: Particle[] = [];
-    private particleCount = 50; // 增加数量，让画面更丰富
+    private particleCount = 50; // Increase count for richer visuals
 
     constructor(canvas: HTMLCanvasElement) {
       this.canvas = canvas;
@@ -101,10 +101,10 @@
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     }
 
-    // 创建 JSON 文本纹理（霓虹发光效果）
+    // Create JSON text texture (neon glow effect)
     createTextTexture(text: string, color: string = '#6432e6'): THREE.CanvasTexture {
       const canvas = document.createElement('canvas');
-      // 根据文本长度动态调整画布宽度
+      // Dynamically adjust canvas width based on text length
       const width = text.length > 2 ? 512 : 256;
       canvas.width = width;
       canvas.height = 256;
@@ -114,10 +114,10 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
-      // 使用 composite 模式创造发光效果
-      ctx.globalCompositeOperation = 'lighter'; // 关键：叠加发光
+      // Use composite mode to create glow effect
+      ctx.globalCompositeOperation = 'lighter'; // Key: additive glow
       
-      // 外层发光（大范围模糊）
+      // Outer glow (large blur)
       ctx.fillStyle = color;
       ctx.filter = 'blur(20px)';
       ctx.globalAlpha = 0.3;
@@ -125,18 +125,18 @@
       ctx.fillText(text, width / 2, 128);
       ctx.fillText(text, width / 2, 128);
       
-      // 中层发光
+      // Middle glow
       ctx.filter = 'blur(10px)';
       ctx.globalAlpha = 0.5;
       ctx.fillText(text, width / 2, 128);
       ctx.fillText(text, width / 2, 128);
       
-      // 内层发光
+      // Inner glow
       ctx.filter = 'blur(5px)';
       ctx.globalAlpha = 0.7;
       ctx.fillText(text, width / 2, 128);
       
-      // 核心文字（清晰无模糊）
+      // Core text (clear, no blur)
       ctx.filter = 'none';
       ctx.globalAlpha = 1.0;
       ctx.fillText(text, width / 2, 128);
@@ -144,7 +144,7 @@
       return new THREE.CanvasTexture(canvas);
     }
 
-    // 创建 UI 组件图标纹理（霓虹发光效果）
+    // Create UI component icon texture (neon glow effect)
     createUIIconTexture(type: UIComponentType, color: string = '#8a2be2'): THREE.CanvasTexture {
       const canvas = document.createElement('canvas');
       canvas.width = 256;
@@ -155,10 +155,10 @@
       ctx.fillStyle = color;
       ctx.lineWidth = 6;
       
-      // 使用 composite 模式创造发光效果
+      // Use composite mode to create glow effect
       ctx.globalCompositeOperation = 'lighter';
       
-      // 定义绘制函数
+      // Define drawing function
       const drawIcon = () => {
         switch (type) {
           case UIComponentType.INPUT:
@@ -202,25 +202,25 @@
         }
       };
       
-      // 外层发光（多次绘制增强效果）
+      // Outer glow (multiple draws for enhanced effect)
       ctx.filter = 'blur(15px)';
       ctx.globalAlpha = 0.3;
       drawIcon();
       drawIcon();
       drawIcon();
       
-      // 中层发光
+      // Middle glow
       ctx.filter = 'blur(8px)';
       ctx.globalAlpha = 0.5;
       drawIcon();
       drawIcon();
       
-      // 内层发光
+      // Inner glow
       ctx.filter = 'blur(4px)';
       ctx.globalAlpha = 0.7;
       drawIcon();
       
-      // 核心图标（清晰）
+      // Core icon (clear)
       ctx.filter = 'none';
       ctx.globalAlpha = 1.0;
       drawIcon();
@@ -232,31 +232,31 @@
       const uiTypes = Object.values(UIComponentType);
       const wrapper = this.canvas.parentElement!;
       const canvasWidth = wrapper.clientWidth;
-      const margin = 150; // 边缘间隙
+      const margin = 150; // Edge margin
 
       for (let i = 0; i < this.particleCount; i++) {
-        // 起始位置在左边缘外（带间隙）
+        // Start position outside left edge (with margin)
         const startX = -canvasWidth / 2 - margin + Math.random() * 200;
-        const y = (Math.random() - 0.5) * 400; // 增加垂直范围
+        const y = (Math.random() - 0.5) * 400; // Increase vertical range
         const z = (Math.random() - 0.5) * 200;
 
-        // 随机颜色
+        // Random color
         const color = COLORS[Math.floor(Math.random() * COLORS.length)];
 
-        // 50% 概率转换为 UI 图标
+        // 50% probability to transform into UI icon
         const willTransform = Math.random() > 0.5;
         let texture: THREE.CanvasTexture;
         let targetType: UIComponentType | undefined;
 
-        // 初始都是 JSON 符号
+        // Initially all are JSON symbols
         const char = JSON_CHARS[Math.floor(Math.random() * JSON_CHARS.length)];
         texture = this.createTextTexture(char, color);
         
-        // 根据文本长度调整 sprite 宽度（缩小1/4：16→12, 32→24）
+        // Adjust sprite width based on text length (reduced by 1/4: 16→12, 32→24)
         const spriteWidth = char.length > 2 ? 24 : 12;
         const spriteHeight = 12;
         
-        // 只有 willTransform 的粒子才会在右侧变成 UI 图标
+        // Only particles with willTransform will become UI icons on the right
         if (willTransform) {
           targetType = uiTypes[Math.floor(Math.random() * uiTypes.length)];
         }
@@ -264,29 +264,29 @@
         const material = new THREE.SpriteMaterial({
           map: texture,
           transparent: true,
-          opacity: 0, // 初始透明
+          opacity: 0, // Initially transparent
           blending: THREE.AdditiveBlending
         });
 
         const sprite = new THREE.Sprite(material);
         sprite.position.set(startX, y, z);
-        sprite.scale.set(spriteWidth, spriteHeight, 1); // 根据文本长度调整
+        sprite.scale.set(spriteWidth, spriteHeight, 1); // Adjust based on text length
         
         this.scene.add(sprite);
 
         this.particles.push({
           mesh: sprite,
           velocity: new THREE.Vector3(
-            Math.random() * 0.4 + 0.25, // x: 向右（速度减半）
-            (Math.random() - 0.5) * 0.15, // y: 轻微上下（速度减半）
-            (Math.random() - 0.5) * 0.1  // z: 轻微前后（速度减半）
+            Math.random() * 0.4 + 0.25, // x: rightward (half speed)
+            (Math.random() - 0.5) * 0.15, // y: slight up/down (half speed)
+            (Math.random() - 0.5) * 0.1  // z: slight forward/back (half speed)
           ),
           startX,
           phase: 'json',
-          targetType, // 如果是 undefined，则永远保持 JSON
-          rotationSpeed: (Math.random() - 0.5) * 0.01, // 旋转速度减半
+          targetType, // If undefined, always stays JSON
+          rotationSpeed: (Math.random() - 0.5) * 0.01, // Half rotation speed
           color,
-          currentText: char // 记录当前文本
+          currentText: char // Record current text
         });
       }
     }
@@ -295,34 +295,34 @@
       const pos = particle.mesh.position;
       const wrapper = this.canvas.parentElement!;
       const canvasWidth = wrapper.clientWidth;
-      const margin = 150; // 边缘间隙
-      const edgeFadeDistance = 100; // 边缘淡入淡出距离
-      const centerFadeDistance = 120; // 中线淡入淡出距离
+      const margin = 150; // Edge margin
+      const edgeFadeDistance = 100; // Edge fade in/out distance
+      const centerFadeDistance = 120; // Center line fade in/out distance
       
-      // 更新位置
+      // Update position
       pos.x += particle.velocity.x;
       pos.y += particle.velocity.y;
       pos.z += particle.velocity.z;
 
-      // 旋转效果
+      // Rotation effect
       particle.mesh.material.rotation += particle.rotationSpeed;
 
-      // 计算边界（考虑间隙）
+      // Calculate boundaries (considering margin)
       const leftBoundary = -canvasWidth / 2 + margin;
       const rightBoundary = canvasWidth / 2 - margin;
-      const centerLine = 0; // 屏幕中线
+      const centerLine = 0; // Screen center line
       
-      // 根据 X 坐标判断阶段和透明度
+      // Determine phase and opacity based on X coordinate
       if (pos.x < centerLine - centerFadeDistance) {
-        // 左侧区域：显示 JSON 符号
+        // Left area: display JSON symbols
         particle.phase = 'json';
-        // 根据当前文本长度设置宽度（缩小1/4：32→24, 16→12）
+        // Set width based on current text length (reduced by 1/4: 32→24, 16→12)
         const spriteWidth = (particle.currentText && particle.currentText.length > 2) ? 24 : 12;
         if (particle.mesh.scale.x !== spriteWidth || particle.mesh.scale.y !== 12) {
           particle.mesh.scale.set(spriteWidth, 12, 1);
         }
         
-        // 边缘淡入效果
+        // Edge fade-in effect
         if (pos.x < leftBoundary + edgeFadeDistance) {
           const fadeProgress = (pos.x - (leftBoundary - edgeFadeDistance)) / edgeFadeDistance;
           particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeProgress * 0.85));
@@ -330,30 +330,30 @@
           particle.mesh.material.opacity = 0.85;
         }
       } else if (pos.x < centerLine) {
-        // 靠近中线左侧：JSON 淡出消失
+        // Near center line left: JSON fades out and disappears
         particle.phase = 'transition';
         const fadeOutProgress = (centerLine - pos.x) / centerFadeDistance; // 1 → 0
         particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeOutProgress * 0.85));
       } else if (particle.targetType && pos.x < centerLine + centerFadeDistance) {
-        // 靠近中线右侧：只有 targetType 的粒子才会变成 UI 淡入出现
+        // Near center line right: only particles with targetType become UI and fade in
         particle.phase = 'ui';
         const fadeInProgress = (pos.x - centerLine) / centerFadeDistance; // 0 → 1
         particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeInProgress * 0.85));
         
-        // 切换到 UI 纹理和尺寸（缩小1/4：21→16）
+        // Switch to UI texture and size (reduced by 1/4: 21→16)
         particle.mesh.material.map = this.getUITexture(particle.targetType, particle.color);
         particle.mesh.material.needsUpdate = true;
         if (particle.mesh.scale.x !== 16) {
-          particle.mesh.scale.set(16, 16, 1); // UI 图标尺寸
+          particle.mesh.scale.set(16, 16, 1); // UI icon size
         }
       } else if (particle.targetType) {
-        // 右侧区域：显示 UI 图标（只有 targetType 的粒子）
+        // Right area: display UI icons (only particles with targetType)
         particle.phase = 'ui';
         if (particle.mesh.scale.x !== 16) {
-          particle.mesh.scale.set(16, 16, 1); // UI 图标尺寸
+          particle.mesh.scale.set(16, 16, 1); // UI icon size
         }
         
-        // 边缘淡出效果
+        // Edge fade-out effect
         if (pos.x > rightBoundary - edgeFadeDistance) {
           const fadeProgress = (rightBoundary - pos.x) / edgeFadeDistance;
           particle.mesh.material.opacity = Math.max(0, Math.min(0.85, fadeProgress * 0.85));
@@ -361,47 +361,47 @@
           particle.mesh.material.opacity = 0.85;
         }
       } else {
-        // 没有 targetType 的粒子在中线后继续保持透明（消失状态）
+        // Particles without targetType remain transparent after center line (disappeared state)
         particle.mesh.material.opacity = 0;
       }
 
-      // 循环：从右侧重置到左侧
+      // Loop: reset from right to left
       if (pos.x > rightBoundary + edgeFadeDistance) {
         pos.x = leftBoundary - edgeFadeDistance + Math.random() * 100;
-        pos.y = (Math.random() - 0.5) * 400; // 增加垂直范围
+        pos.y = (Math.random() - 0.5) * 400; // Increase vertical range
         pos.z = (Math.random() - 0.5) * 200;
         particle.phase = 'json';
         
-        // 重新随机颜色
+        // Re-randomize color
         particle.color = COLORS[Math.floor(Math.random() * COLORS.length)];
         
-        // 重新随机决定是否转换为 UI
+        // Re-randomize decision to transform to UI
         if (Math.random() > 0.5) {
           const uiTypes = Object.values(UIComponentType);
           particle.targetType = uiTypes[Math.floor(Math.random() * uiTypes.length)];
         } else {
-          particle.targetType = undefined; // 保持纯 JSON
+          particle.targetType = undefined; // Keep pure JSON
         }
         
-        // 重置为 JSON 纹理
+        // Reset to JSON texture
         const char = JSON_CHARS[Math.floor(Math.random() * JSON_CHARS.length)];
-        particle.currentText = char; // 更新当前文本
+        particle.currentText = char; // Update current text
         particle.mesh.material.map = this.createTextTexture(char, particle.color);
         particle.mesh.material.needsUpdate = true;
-        // 根据文本长度设置尺寸（缩小1/4：32→24, 16→12）
+        // Set size based on text length (reduced by 1/4: 32→24, 16→12)
         const spriteWidth = char.length > 2 ? 24 : 12;
         particle.mesh.scale.set(spriteWidth, 12, 1);
-        particle.mesh.material.opacity = 0; // 重置为透明
+        particle.mesh.material.opacity = 0; // Reset to transparent
       }
 
-      // Y 和 Z 边界（增加范围）
+      // Y and Z boundaries (increased range)
       if (pos.y > 200) pos.y = -200;
       if (pos.y < -200) pos.y = 200;
       if (pos.z > 100) pos.z = -100;
       if (pos.z < -100) pos.z = 100;
     }
 
-    // 缓存 UI 纹理（按类型和颜色）
+    // Cache UI textures (by type and color)
     private uiTextureCache: Map<string, THREE.CanvasTexture> = new Map();
     
     getUITexture(type: UIComponentType, color: string): THREE.CanvasTexture {

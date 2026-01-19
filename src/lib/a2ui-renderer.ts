@@ -42,7 +42,6 @@ export class A2UIRenderer {
    * Handle component action (e.g., button click)
    */
   private handleAction(action: any): void {
-    console.log('🔘 Action triggered:', action);
     
     if (this.actionHandler) {
       this.actionHandler(action);
@@ -59,19 +58,14 @@ export class A2UIRenderer {
    * Process A2UI v0.9 standard messages
    */
   processMessage(message: A2UIMessage): void {
-    console.log('🎯 A2UIRenderer.processMessage called with:', message);
     
     if ('createSurface' in message) {
-      console.log('🏗️ Processing createSurface message');
       this.messageHandlers.handleCreateSurface(message.createSurface);
     } else if ('updateComponents' in message) {
-      console.log('🔧 Processing updateComponents message');
       this.messageHandlers.handleUpdateComponents(message.updateComponents);
     } else if ('updateDataModel' in message) {
-      console.log('📊 Processing updateDataModel message');
       this.messageHandlers.handleUpdateDataModel(message.updateDataModel);
     } else if ('deleteSurface' in message) {
-      console.log('🗑️ Processing deleteSurface message');
       this.messageHandlers.handleDeleteSurface(message.deleteSurface);
     } else {
       // Legacy v0.8 support

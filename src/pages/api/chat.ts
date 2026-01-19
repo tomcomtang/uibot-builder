@@ -118,8 +118,6 @@ const isUIRequest = (messageText: string): boolean => {
     try {
       const parsed = JSON.parse(messageText.trim());
       if (parsed.action && parsed.action.name && parsed.action.surfaceId && parsed.action.sourceComponentId) {
-        console.log('✅ Detected A2UI Action JSON (pure format), treating as UI request');
-        console.log('📋 Action details:', JSON.stringify(parsed, null, 2));
         return true;
       }
     } catch (e) {
@@ -135,8 +133,6 @@ const isUIRequest = (messageText: string): boolean => {
       if (actionMatch) {
         const actionJson = JSON.parse(actionMatch[1]);
         if (actionJson.action && actionJson.action.name) {
-          console.log('✅ Detected A2UI Action in message (legacy format), treating as UI request');
-          console.log('📋 Action details:', JSON.stringify(actionJson, null, 2));
           return true;
         }
       }
@@ -191,12 +187,9 @@ const isA2UIJSON = (content: string): boolean => {
 // Validate A2UI JSON (similar to A2UI source code)
 const validateA2UIJSON = (jsonStr: string, schema: any): any[] => {
   try {
-    console.log('Validating A2UI JSON, input length:', jsonStr.length);
-    
     let parsed: any;
     try {
       parsed = JSON.parse(jsonStr);
-      console.log('Parsed JSON successfully, type:', typeof parsed, 'Is array:', Array.isArray(parsed));
     } catch (parseError: any) {
       console.error('JSON parse error:', parseError.message);
       throw new Error(`Invalid JSON string: ${parseError.message}`);
@@ -204,7 +197,6 @@ const validateA2UIJSON = (jsonStr: string, schema: any): any[] => {
 
     // If parsed object contains a2ui_json field, extract it
     if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) && parsed.a2ui_json) {
-      console.log('Found a2ui_json field, extracting...');
       try {
         parsed = typeof parsed.a2ui_json === 'string' 
           ? JSON.parse(parsed.a2ui_json) 
@@ -230,7 +222,6 @@ const validateA2UIJSON = (jsonStr: string, schema: any): any[] => {
       throw new Error('No valid A2UI message structure found');
     }
 
-    console.log('Validation passed, returning', parsed.length, 'messages');
     return parsed;
   } catch (error: any) {
     console.error('Validation error:', error);
@@ -240,10 +231,7 @@ const validateA2UIJSON = (jsonStr: string, schema: any): any[] => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    console.log('🚀 Google Gemini API called (A2UI原理)');
-    
     const { messages }: { messages: UIMessage[] } = await request.json();
-    console.log('📨 Received messages:', messages);
 
     // Convert message format
     const modelMessages = await convertToModelMessages(messages);
@@ -256,7 +244,6 @@ export const POST: APIRoute = async ({ request }) => {
       ?.join('') || '';
     
     const isUI = isUIRequest(lastMessageText);
-    console.log('🎯 Is UI request:', isUI);
 
     const apiKey = process.env.GEMINI_API_KEY 
       || process.env.Gemini_Api_Key
@@ -278,9 +265,7 @@ export const POST: APIRoute = async ({ request }) => {
       const systemPrompt = createA2UISystemPrompt(a2uiSchema);
       
       // Add history messages
-      modelMessages.slice(0, -1).forEach((msg: any, index: number) => {
-        console.log(`📝 Processing history message ${index}:`, { role: msg.role, hasContent: !!msg.content });
-        
+      modelMessages.slice(0, -1).forEach((msg: any) => {
         // Handle all possible role values: 'user', 'assistant', 'model', 'system'
         if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
           let msgContent = '';
@@ -293,14 +278,12 @@ export const POST: APIRoute = async ({ request }) => {
           
           // Skip A2UI JSON responses - they are for UI rendering, not conversation history
           if (msgContent && isA2UIJSON(msgContent)) {
-            console.log(`⏭️ Skipping A2UI JSON response (not part of conversation history)`);
             return; // Skip this message
           }
           
           if (msgContent) {
             // Google Gemini API only accepts 'user' or 'model', not 'assistant'
             const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
-            console.log(`✅ Adding message with role: ${geminiRole} (original: ${msg.role})`);
             apiMessages.push({
               role: geminiRole,
               parts: [{ text: msgContent }]
@@ -310,8 +293,6 @@ export const POST: APIRoute = async ({ request }) => {
           console.warn(`⚠️ Skipping message with unknown role: ${msg.role}`);
         }
       });
-      
-      console.log(`📊 Total history messages added: ${apiMessages.length}`);
 
       // Add current user message
       const currentUserMsg = modelMessages[modelMessages.length - 1];
@@ -324,33 +305,8 @@ export const POST: APIRoute = async ({ request }) => {
           userContent = textPart?.text || '';
         }
         
-        // Extract and log A2UI Action if present (pure JSON format or legacy format)
-        if (userContent) {
-          try {
-            // Try pure JSON format first (A2UI v0.9 standard)
-            if (userContent.trim().startsWith('{') && userContent.includes('"action"')) {
-              const a2uiAction = JSON.parse(userContent.trim());
-              if (a2uiAction.action && a2uiAction.action.name) {
-                console.log('🎯 A2UI Action extracted from user message (pure JSON format):', JSON.stringify(a2uiAction, null, 2));
-                console.log('📋 Action name:', a2uiAction.action.name);
-                console.log('📋 Action surfaceId:', a2uiAction.action.surfaceId);
-                console.log('📋 Action context:', JSON.stringify(a2uiAction.action.context, null, 2));
-              }
-            }
-            // Try legacy format with "A2UI Action:" prefix
-            else if (userContent.includes('A2UI Action:')) {
-              const actionMatch = userContent.match(/A2UI Action:\s*(\{[\s\S]*\})/);
-              if (actionMatch) {
-                const a2uiAction = JSON.parse(actionMatch[1]);
-                console.log('🎯 A2UI Action extracted from user message (legacy format):', JSON.stringify(a2uiAction, null, 2));
-                console.log('📋 Action name:', a2uiAction.action?.name);
-                console.log('📋 Action context:', JSON.stringify(a2uiAction.action?.context, null, 2));
-              }
-            }
-          } catch (e) {
-            console.warn('⚠️ Failed to parse A2UI Action from message:', e);
-          }
-        }
+        // Extract A2UI Action if present (pure JSON format or legacy format)
+        // Action is already validated in isUIRequest, no need to log here
         
         if (userContent) {
           apiMessages.push({
@@ -382,13 +338,6 @@ export const POST: APIRoute = async ({ request }) => {
         }
       ];
 
-      console.log('📋 Using Function Calling mode (A2UI原理)');
-      console.log('📤 Final apiMessages to send:', JSON.stringify(apiMessages.map(m => ({ role: m.role, textLength: m.parts?.[0]?.text?.length || 0 })), null, 2));
-      
-      // Print full JSON content being sent to AI
-      console.log('🎨 ========== JSON Content Sent to AI ==========');
-      console.log(JSON.stringify(apiMessages, null, 2));
-      console.log('🎨 ==============================================');
 
       // Validate all messages have valid roles before sending
       const invalidMessages = apiMessages.filter(m => m.role !== 'user' && m.role !== 'model');
@@ -409,7 +358,6 @@ export const POST: APIRoute = async ({ request }) => {
       });
 
       const response = await model;
-      console.log('✅ Gemini API response received');
 
       // Process function call response (exactly like A2UI)
       const candidates = response.candidates;
@@ -428,16 +376,7 @@ export const POST: APIRoute = async ({ request }) => {
 
               if (a2uiFunctionCall?.functionCall?.args?.a2ui_json) {
                 const a2uiJsonStr = a2uiFunctionCall.functionCall.args.a2ui_json;
-                console.log('✅ Found A2UI function call, validating...');
-
                 const a2uiMessages = validateA2UIJSON(String(a2uiJsonStr), a2uiSchema);
-                console.log('✅ Validated A2UI messages:', a2uiMessages.length, 'messages');
-                
-                // Print final AI JSON configuration to console
-                console.log('🎨 ========== Final AI JSON Configuration ==========');
-                console.log(JSON.stringify(a2uiMessages, null, 2));
-                console.log('🎨 =================================================');
-
                 const finalContent = JSON.stringify(a2uiMessages);
           
           // Return as AI SDK format
@@ -469,9 +408,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     } else {
       // Non-UI request: Normal conversation
-      modelMessages.forEach((msg: any, index: number) => {
-        console.log(`📝 Processing message ${index}:`, { role: msg.role, hasContent: !!msg.content });
-        
+      modelMessages.forEach((msg: any) => {
         // Handle all possible role values: 'user', 'assistant', 'model', 'system'
         if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
           let msgContent = '';
@@ -484,14 +421,12 @@ export const POST: APIRoute = async ({ request }) => {
           
           // Skip A2UI JSON responses - they are for UI rendering, not conversation history
           if (msgContent && isA2UIJSON(msgContent)) {
-            console.log(`⏭️ Skipping A2UI JSON response (not part of conversation history)`);
             return; // Skip this message
           }
           
           if (msgContent) {
             // Google Gemini API only accepts 'user' or 'model', not 'assistant'
             const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
-            console.log(`✅ Adding message with role: ${geminiRole} (original: ${msg.role})`);
             apiMessages.push({
               role: geminiRole,
               parts: [{ text: msgContent }]
@@ -501,9 +436,6 @@ export const POST: APIRoute = async ({ request }) => {
           console.warn(`⚠️ Skipping message with unknown role: ${msg.role}`);
         }
       });
-      
-      console.log(`📊 Total messages added: ${apiMessages.length}`);
-      console.log('📤 Final apiMessages to send:', JSON.stringify(apiMessages.map(m => ({ role: m.role, textLength: m.parts?.[0]?.text?.length || 0 })), null, 2));
 
       // Validate all messages have valid roles before sending
       const invalidMessages = apiMessages.filter(m => m.role !== 'user' && m.role !== 'model');

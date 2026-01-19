@@ -1,35 +1,35 @@
-/* Chat Page Styles - 从 chat.astro 提取的完整样式 */
+/* Chat Page Styles - Complete styles extracted from chat.astro */
 
-/* 基础样式重置和全局样式 */
+/* Basic style reset and global styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* 强制覆盖全局 svg vertical-align: middle */
+/* Force override global svg vertical-align: middle */
 .message-avatar svg {
   vertical-align: top !important;
 }
 
-/* 确保 a2ui-message-content 内的第一个子元素没有 margin-top */
+/* Ensure first child element in a2ui-message-content has no margin-top */
 .a2ui-message-content > *:first-child {
   margin-top: 0 !important;
 }
 
-/* 修复 A2UI 文本组件的顶部对齐问题 - 消除 line-height 产生的上方间隙 */
+/* Fix top alignment issue for text components - eliminate top gap from line-height */
 .a2ui-message-content .a2ui-text {
-  /* 重置 line-height 为 1，消除上下间隙 */
+  /* Reset line-height to 1, eliminate vertical gaps */
   line-height: 1 !important;
-  /* 确保没有额外的 margin 和 padding */
+  /* Ensure no extra margin and padding */
   margin: 0 !important;
   padding: 0 !important;
-  /* 使用 flex 布局确保内容紧贴顶部 */
+  /* Use flex layout to ensure content sticks to top */
   display: flex !important;
   align-items: flex-start !important;
 }
 
-/* 针对不同大小的文本，保持 line-height: 1 */
+/* Keep line-height: 1 for different text sizes */
 .a2ui-message-content .a2ui-text.text-extraLarge {
   line-height: 1 !important;
 }
@@ -53,12 +53,12 @@ body {
   overflow-x: hidden;
 }
 
-/* 隐藏 Next.js 动态渲染的内容 */
+/* Hide Next.js dynamically rendered content */
 #__next {
   display: none !important;
 }
 
-/* 隐藏不需要的元素 */
+/* Hide unnecessary elements */
 [class*="styles-module__uOGawG__wrapper"],
 [class*="styles-module__Rkd4lW__banner"],
 [class*="styles-module__1H6L9a__navigation"],
@@ -66,9 +66,9 @@ footer[class*="Footer-module"] {
   display: none !important;
 }
 
-/* 聊天区域主要样式 */
+/* Main chat area styles */
 .chat-section {
-  position: fixed; /* 固定整个区域 */
+  position: fixed; /* Fix entire area */
   top: 0;
   left: 0;
   right: 0;
@@ -78,8 +78,8 @@ footer[class*="Footer-module"] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden; /* 不在这里滚动 */
-  /* 页面加载动画 */
+  overflow: hidden; /* Don't scroll here */
+  /* Page load animation */
   animation: pageLoadFadeIn 0.5s ease-out;
 }
 
@@ -93,8 +93,8 @@ footer[class*="Footer-module"] {
 }
 
 .chat-background {
-  position: fixed; /* 固定卡片背景 */
-  top: 80px; /* 导航栏下方 + 间隙 */
+  position: fixed; /* Fix card background */
+  top: 80px; /* Below navigation bar + gap */
   left: 0.75rem;
   right: 0.75rem;
   bottom: 0;
@@ -102,13 +102,13 @@ footer[class*="Footer-module"] {
   align-items: flex-start;
   justify-content: center;
   padding: 2rem;
-  pointer-events: none; /* 让点击穿透到下层 */
-  z-index: 1; /* 最底层 */
+  pointer-events: none; /* Let clicks pass through to lower layer */
+  z-index: 1; /* Bottom layer */
   
-  /* 圆角渐变背景卡片 - 保持原样式 */
-  border-radius: 56px 56px 0 0; /* 只有顶部圆角，更圆润 */
+  /* Rounded gradient background card - maintain original style */
+  border-radius: 56px 56px 0 0; /* Only top corners rounded, more rounded */
   background: radial-gradient(140% 107.13% at 50% 90%, transparent 37.41%, #6633ee 69.27%, #ffffff 100%);
-  /* 卡片出现动画 */
+  /* Card appearance animation */
   animation: cardSlideUp 0.6s ease-out;
 }
 
@@ -124,20 +124,20 @@ footer[class*="Footer-module"] {
 }
 
 .chat-container {
-  position: fixed; /* 固定定位 */
-  top: 80px; /* 和卡片背景顶部对齐 */
+  position: fixed; /* Fixed positioning */
+  top: 80px; /* Align with card background top */
   left: 0;
   right: 0;
-  bottom: 120px; /* 为输入框留出空间，不延伸到底部 */
+  bottom: 120px; /* Leave space for input field, don't extend to bottom */
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto; /* 可滚动 */
+  overflow-y: auto; /* Scrollable */
   overflow-x: hidden;
-  z-index: 50; /* 在背景之上，在输入框之下 */
-  /* 内容延迟淡入 */
+  z-index: 50; /* Above background, below input field */
+  /* Content delayed fade-in */
   animation: contentFadeIn 0.5s ease-out 0.3s both;
-  /* 底部渐变遮罩 - 平滑淡出效果 */
+  /* Bottom gradient mask - smooth fade-out effect */
   -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
   mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
 }
@@ -155,15 +155,15 @@ footer[class*="Footer-module"] {
 
 .chat-messages {
   width: 100%;
-  max-width: 1000px; /* 内容区域宽度 */
+  max-width: 1000px; /* Content area width */
   padding: 2rem 1rem;
-  padding-bottom: 2rem; /* 恢复正常的底部内边距 */
+  padding-bottom: 2rem; /* Restore normal bottom padding */
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/* 自定义滚动条 - 应用到聊天容器 */
+/* Custom scrollbar - applied to chat container */
 .chat-container::-webkit-scrollbar {
   width: 8px;
 }
@@ -214,7 +214,7 @@ footer[class*="Footer-module"] {
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   gap: 0.75rem;
-  align-items: flex-start !important; /* 顶部对齐，与 A2UI 官方实现一致 */
+  align-items: flex-start !important; /* Top alignment, consistent with official implementation */
   width: auto !important;
   animation: messageSlideIn 0.3s ease;
 }
@@ -251,10 +251,10 @@ footer[class*="Footer-module"] {
   margin: 0 !important;
   padding: 0 !important;
   align-self: flex-start !important;
-  /* 移除avatar容器内部间隙 */
+  /* Remove internal spacing in avatar container */
   line-height: 0 !important;
   font-size: 0 !important;
-  overflow: hidden; /* 确保内容不会溢出 */
+  overflow: hidden; /* Ensure content doesn't overflow */
 }
 
 .message-avatar svg,
@@ -266,7 +266,7 @@ footer[class*="Footer-module"] {
   padding: 0 !important;
   flex: 0 0 auto !important;
   vertical-align: top !important;
-  /* 移除SVG内部间隙 */
+  /* Remove internal spacing in SVG */
   line-height: 0 !important;
   font-size: 0 !important;
 }
@@ -301,22 +301,22 @@ footer[class*="Footer-module"] {
 
 .user-message .message-content,
 .ai-message .message-content {
-  /* 移除背景样式，让卡片自己处理 */
+  /* Remove background styles, let card handle it */
   background: transparent;
   border: none;
   padding: 0;
-  /* 确保内容从顶部对齐，不受父级影响 */
+  /* Ensure content aligns from top, not affected by parent */
   align-self: flex-start;
 }
 
-/* 用户消息的卡片样式 */
+/* User message card styles */
 .user-message .a2ui-card {
   background: rgba(102, 51, 238, 0.12) !important;
   border: 1px solid rgba(102, 51, 238, 0.2) !important;
   box-shadow: 0 2px 12px rgba(102, 51, 238, 0.08) !important;
 }
 
-/* AI消息的卡片样式 */
+/* AI message card styles */
 .ai-message .a2ui-card {
   background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(10px) !important;
@@ -328,9 +328,9 @@ footer[class*="Footer-module"] {
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 2rem); /* 页面两侧间距 */
-  max-width: calc(1000px - 2rem); /* chat-messages 宽度 - 左右 padding (1rem * 2) */
-  padding-left: 36px; /* 只保留头像宽度 */
+  width: calc(100% - 2rem); /* Page side spacing */
+  max-width: calc(1000px - 2rem); /* chat-messages width - left/right padding (1rem * 2) */
+  padding-left: 36px; /* Only keep avatar width */
   padding-right: 0;
   box-sizing: border-box;
   z-index: 100;
@@ -397,7 +397,7 @@ footer[class*="Footer-module"] {
   height: 16px;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .chat-section {
     padding-bottom: 0.75rem;
@@ -414,11 +414,11 @@ footer[class*="Footer-module"] {
 
   .chat-container {
     gap: 1rem;
-    bottom: 100px; /* 移动端为输入框留出空间 */
+    bottom: 100px; /* Leave space for input field on mobile */
   }
 
   .chat-messages {
-    padding-bottom: 1.5rem; /* 移动端正常的底部内边距 */
+    padding-bottom: 1.5rem; /* Normal bottom padding on mobile */
   }
 
   .welcome-message {
@@ -450,11 +450,11 @@ footer[class*="Footer-module"] {
   }
 
   .chat-container {
-    bottom: 90px; /* 小屏幕为输入框留出空间 */
+    bottom: 90px; /* Leave space for input field on small screens */
   }
 
   .chat-messages {
-    padding-bottom: 1rem; /* 小屏幕正常的底部内边距 */
+    padding-bottom: 1rem; /* Normal bottom padding on small screens */
   }
 
   .chat-input-container {
@@ -462,7 +462,7 @@ footer[class*="Footer-module"] {
   }
 }
 
-/* 加载动画样式 */
+/* Loading animation styles */
 @keyframes loadingDot {
   0%, 80%, 100% {
     transform: scale(0.8);
