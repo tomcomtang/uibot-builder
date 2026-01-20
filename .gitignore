@@ -33,3 +33,6 @@ a2ui
 
 # astro cache
 .astro
+
+# EdgeOne build output
+.edgeone/
