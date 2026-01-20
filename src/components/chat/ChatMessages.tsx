@@ -42,8 +42,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMes
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="welcome-message">
-            <h2>👋 Welcome to A2UI Chat</h2>
-            <p>Hi! I'm your AI assistant. Ask me anything or try typing keywords like "profile", "products" to see UI components.</p>
+            <h2>👋 AI Interactive Chat UI</h2>
+            <p>An AI conversational platform with interactive UI components. Enables structured bidirectional interactions through text and UI, dramatically improving efficiency.</p>
           </div>
         )}
 
