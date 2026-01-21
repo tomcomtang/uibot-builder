@@ -25,11 +25,9 @@ pnpm-debug.log*
 # vs code setting folder
 .vscode/
 
-# A2UI related folders (不提交)
-A2UI/
-a2ui/
-A2UI
-a2ui
+# A2UI related folders (不提交，只忽略根目录下的)
+/A2UI/
+/a2ui/
 
 # astro cache
 .astro

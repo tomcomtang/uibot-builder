@@ -42,6 +42,10 @@ npm run build
 npm run preview
 ```
 
+## Deploy
+
+[![Deploy with EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?from=github&template=interactive-ai-chatbot)
+
 ## Project Structure
 
 ```

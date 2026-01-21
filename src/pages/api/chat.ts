@@ -269,21 +269,28 @@ export const POST: APIRoute = async ({ request }) => {
     const isUI = isUIRequest(lastMessageText);
 
     // Try multiple ways to get API key (support different deployment environments)
-    const apiKey = process.env.GEMINI_API_KEY 
-      || process.env.Gemini_Api_Key
-      || process.env.GEMINI_API_KEY_ENV  // EdgeOne Pages environment variable format
-      || import.meta.env.GEMINI_API_KEY 
-      || import.meta.env.Gemini_Api_Key
-      || import.meta.env.PUBLIC_GEMINI_API_KEY; // Public env var (if needed)
+    const apiKey = process.env.GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
     
     if (!apiKey) {
       console.error('❌ GEMINI_API_KEY not found. Available env vars:', {
         'process.env.GEMINI_API_KEY': !!process.env.GEMINI_API_KEY,
-        'process.env.Gemini_Api_Key': !!process.env.Gemini_Api_Key,
-        'import.meta.env.GEMINI_API_KEY': !!import.meta.env.GEMINI_API_KEY,
-        'import.meta.env.Gemini_Api_Key': !!import.meta.env.Gemini_Api_Key,
+        'import.meta.env.GEMINI_API_KEY': !!import.meta.env.GEMINI_API_KEY
       });
-      throw new Error('GEMINI_API_KEY not found. Please set GEMINI_API_KEY in your deployment environment variables.');
+      // Return user-friendly error message about insufficient balance
+      return new Response(JSON.stringify({
+        error: 'Insufficient Balance',
+        message: 'Insufficient balance. Unable to call AI service. Please check your account balance.',
+        details: {
+          code: 402,
+          suggestion: 'Please check your account balance and ensure you have sufficient credits to use the AI service.'
+        }
+      }), {
+        status: 402,
+        headers: { 
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
+      });
     }
 
     // Initialize Google GenAI
@@ -521,7 +528,7 @@ export const POST: APIRoute = async ({ request }) => {
           
           // Add more context for common errors
           if (apiErrorMessage.includes('GEMINI_API_KEY')) {
-            apiErrorMessage = 'GEMINI_API_KEY not configured. Please set GEMINI_API_KEY in your EdgeOne Pages environment variables.';
+            apiErrorMessage = 'Insufficient balance. Unable to call AI service. Please check your account balance.';
           } else if (apiErrorMessage.includes('schema')) {
             apiErrorMessage = `Schema loading error: ${apiErrorMessage}. Please ensure a2ui-schema.json exists in src/lib/`;
           } else if (apiErrorMessage.includes('ENOENT')) {

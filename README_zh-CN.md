@@ -42,6 +42,10 @@ npm run build
 npm run preview
 ```
 
+## 部署
+
+[![Deploy with EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://console.cloud.tencent.com/edgeone/pages/new?template=interactive-ai-chatbot)
+
 ## 项目结构
 
 ```
